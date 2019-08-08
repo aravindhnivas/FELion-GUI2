@@ -1,0 +1,77 @@
+/* Main index page styles*/
+
+body,
+.card {
+    background-color: #3f464c;
+}
+
+.container {
+    color: #152533;
+    margin-top: 2rem;
+    margin-left: 2rem;
+}
+
+.jumbotron {
+    background-color: #3f464c;
+    text-align: center;
+}
+
+h1,
+p,
+.nav-link {
+    color: white;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show>.nav-link {
+    background-color: #335880cf
+}
+
+label {
+    color: white;
+}
+
+
+/* Common */
+
+#mass-main-containter,
+#normline-main-containter {
+    width: 99%!important;
+}
+
+
+/* Normline */
+
+.normline-open {
+    text-align: left;
+    margin-top: 1.2rem;
+    margin-left: 1.2rem
+}
+
+
+/* Powerfile */
+
+.pow-opendir {
+    text-align: right;
+}
+
+
+/* Footer */
+
+footer {
+    text-align: center;
+    position: absolute;
+    bottom: 0;
+    width: 100%
+}
+
+.text-muted {
+    color: #ffffff!important
+}
+
+
+/* About Page*/
+
+.about-container p {
+    color: black
+}

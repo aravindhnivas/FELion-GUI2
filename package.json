@@ -1,0 +1,21 @@
+{
+    "name": "FELion GUI2",
+    "version": "1.0.0",
+    "description": "FELion Spectrum Analyser",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron ."
+    },
+    "repository": "https://github.com/aravindhnivas/FELion-Spectrum-Analyser",
+    "keywords": [],
+    "author": "Aravindh",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^5.0.4",
+        "electron-packager": "^14.0.4"
+    },
+    "dependencies": {
+        "electron-progressbar": "^1.2.0",
+        "python-shell": "^1.0.7"
+    }
+}
