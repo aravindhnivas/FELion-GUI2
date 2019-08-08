@@ -21,7 +21,9 @@ $(document).ready(function() {
         info_status(info)
     });
 
-    //END
+    $('#pow-dirLabel').hide()
+    $('#pow-opendir').click(openDir)
+    
 })
 
 function info_status(info) {
@@ -45,16 +47,14 @@ const dd = String(today.getDate()).padStart(2, '0');
 const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
 const yy = today.getFullYear().toString().substr(2);
 today = `${dd}_${mm}_${yy}-#`
-
 filename.value = today
 
 //Showing opened directory label
-let dirLabelPlace = document.querySelector('.pow-dirLabel-place')
-let openDirBtn = document.querySelector('.pow-opendir')
-openDirBtn.addEventListener('click', openDir)
+
+let dirLabel = document.querySelector('#pow-dirLabel')
 
 let folder;
-let dirLabel;
+let folderOpen;
 
 function openDir(e) {
 
@@ -63,24 +63,23 @@ function openDir(e) {
         properties: ['openDirectory'],
     };
 
-    folder = dialog.showOpenDialog(mainWindow, options);
+    folderOpen = dialog.showOpenDialog(mainWindow, options);
 
-    if (folder !== undefined) {
-        if (dirLabelPlace.children.length > 0) {
-            dirLabel = document.querySelector('.pow-dirLabel')
-            dirLabel.innerHTML = folder[0]
+    folderOpen.then(value => {
+
+        folder = value.filePaths[0];
+
+        $('#pow-dirLabel').show()
+        if (folder==undefined){
+            dirLabel.innerHTML = "No folder selected";
+            dirLabel.className = "alert alert-danger";
+
+
         } else {
-            dirLabel = document.createElement('label');
-            dirLabel.className = "alert alert-primary pow-dirLabel";
-            let itemText = document.createTextNode(folder);
-            dirLabel.appendChild(itemText);
-            dirLabelPlace.appendChild(dirLabel);
+            dirLabel.innerHTML = folder;
+            dirLabel.className = "alert alert-primary";
         }
-    } else {
-        if (dirLabelPlace.children.length > 0) {
-            dirLabel.remove()
-        }
-    }
+    })
 }
 
 // Showing save-alert next to save button

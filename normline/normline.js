@@ -7,6 +7,7 @@ const spawn = require("child_process").spawn;
 const fs = require('fs')
 
 /////////////////////////////////////////////////////////
+
 $(document).ready(function() {
 
     $("#normline-open-btn").click(openFile);
@@ -44,6 +45,7 @@ function info_status(info) {
 //Showing opened file label
 
 let filePaths;
+let nofile;
 let label = document.querySelector("#label")
 let fileLocation;
 let baseName = [];
@@ -59,26 +61,29 @@ function openFile(e) {
         ],
         properties: ['openFile', 'multiSelections'],
     };
-    filePaths = dialog.showOpenDialog(mainWindow, options);
 
-    if (filePaths == undefined) {
+    fileOpen = dialog.showOpenDialog(mainWindow, options);
+    fileOpen.then(value => {
 
-        label.textContent = "No files selected "
-        label.className = "alert alert-danger"
+        nofile = false;
 
-    } else {
-
+        filePaths = value.filePaths;
         baseName = [];
         for (x in filePaths) {
             baseName.push(`| ${path.basename(filePaths[x])}`)
         }
-
         fileLocation = path.dirname(filePaths[0])
-
         label.textContent = `${fileLocation} ${baseName}`;
         label.className = "alert alert-success"
-    }
+
+    }).catch((error) => {
+        console.log(`File open error: ${error}`)
+        nofile = true;
+        label.textContent = "No files selected "
+        label.className = "alert alert-danger"
+    })
 }
+
 /////////////////////////////////////////////////////////
 
 let dataFromPython_norm;
@@ -94,7 +99,7 @@ function normplot(e) {
     console.log("I am in javascript now!!")
     console.log(`File: ${filePaths}; ${typeof filePaths}`)
 
-    if (filePaths === undefined) {
+    if (nofile) {
 
         label.textContent = "No files selected "
         label.className = "alert alert-danger"
@@ -245,7 +250,7 @@ function basePlot(e) {
     console.log(`File: ${filePaths}; ${typeof filePaths}`)
     console.log("--------------------------")
 
-    if (filePaths === undefined) {
+    if (nofile) {
 
         label.textContent = "No files selected "
         label.className = "alert alert-danger"

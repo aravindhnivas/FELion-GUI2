@@ -42,8 +42,11 @@ function info_status(info) {
 
 //Showing opened file label
 
-let filePaths;
 let label = document.querySelector("#label")
+let timescanBtn = document.querySelector("#timescan-btn")
+
+let filePaths;
+let fileOpen;
 let fileLocation;
 let baseName = [];
 
@@ -58,15 +61,11 @@ function openFile(e) {
         ],
         properties: ['openFile'],
     };
-    filePaths = dialog.showOpenDialog(mainWindow, options);
 
-    if (filePaths == undefined) {
+    fileOpen = dialog.showOpenDialog(mainWindow, options);
+    fileOpen.then(value => {
 
-        label.textContent = "No files selected "
-        label.className = "alert alert-danger"
-
-    } else {
-
+        filePaths = value.filePaths;
         baseName = [];
         for (x in filePaths) {
             baseName.push(`| ${path.basename(filePaths[x])}`)
@@ -76,8 +75,20 @@ function openFile(e) {
 
         label.textContent = `${fileLocation} ${baseName}`;
         label.className = "alert alert-success"
-    }
-    timescanplot()
+
+        timescanplot()
+
+    }).catch((error) => {
+        console.log(`File open error: ${error}`)
+        
+        label.textContent = "No files selected "
+        label.className = "alert alert-danger"
+        timescanBtn.className = "btn btn-danger"
+
+        setTimeout(() => timescanBtn.className = "btn btn-primary", 2000)
+
+    })
+    
 }
 /////////////////////////////////////////////////////////
 
@@ -166,7 +177,7 @@ function timescanplot(e) {
             console.log(`Error occured ${error_occured}`);
             loading_parent.style.visibility = "visible"
             loading_parent.className = "alert alert-danger"
-            loading.innerText = "Error! (Some file might be missing)"
+            loading.innerText = "Error in file! or if plot is good then ignore(maybe some minor warning from python library)"
             error_occured = false
 
         } else {

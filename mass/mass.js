@@ -42,6 +42,7 @@ function info_status(info) {
 //Showing opened file label
 let filePaths;
 let label = document.querySelector("#label")
+let nofile;
 
 function openFile(e) {
 
@@ -55,31 +56,45 @@ function openFile(e) {
         properties: ['openFile', 'multiSelections'],
     };
 
-    filePaths = dialog.showOpenDialog(mainWindow, options);
+    fileOpen = dialog.showOpenDialog(mainWindow, options);
+    fileOpen.then(value => {
 
-    let baseName = [];
-    for (x in filePaths) {
-        baseName.push(`: ${path.basename(filePaths[x])}`)
-    }
+        nofile = false;
 
-    if (filePaths == undefined) {
+        filePaths = value.filePaths;
+        baseName = [];
+        for (x in filePaths) {
+            baseName.push(`| ${path.basename(filePaths[x])}`)
+        }
+        fileLocation = path.dirname(filePaths[0])
+        label.textContent = `${fileLocation} ${baseName}`;
+        label.className = "alert alert-success"
+
+    }).catch((error) => {
+        console.log(`File open error: ${error}`)
+        nofile = true;
         label.textContent = "No files selected "
         label.className = "alert alert-danger"
-
-    } else {
-        label.textContent = `${path.dirname(filePaths[0])} ${baseName}`;
-        label.className = "alert alert-success"
-    }
+    })
 }
 /////////////////////////////////////////////////////////
 //python backend
 
 let dataFromPython;
+let massplotBtn = document.querySelector("#massplot-btn")
 
 function masspec(e) {
 
     console.log("I am in javascript now!!")
     console.log(`File: ${filePaths}; ${typeof filePaths}`)
+
+    if (nofile) {
+
+        label.textContent = "No files selected "
+        label.className = "alert alert-danger"
+        massplotBtn.className = "btn btn-danger"
+        return setTimeout(() => massplotBtn.className = "btn btn-primary", 2000)
+    }
 
     const py = spawn(path.join(__dirname, "..", "python3.7", "python"), [path.join(__dirname, "./mass.py"), filePaths]);
 
