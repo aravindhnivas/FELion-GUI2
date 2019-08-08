@@ -22,8 +22,12 @@ $(document).ready(function() {
     });
 
     $('#pow-dirLabel').hide()
+    $('#save-alert').hide()
+
     $('#pow-opendir').click(openDir)
-    
+    $('#pow-save-btn').click(savefunc)
+
+    console.log("Page loaded")
 })
 
 function info_status(info) {
@@ -74,7 +78,6 @@ function openDir(e) {
             dirLabel.innerHTML = "No folder selected";
             dirLabel.className = "alert alert-danger";
 
-
         } else {
             dirLabel.innerHTML = folder;
             dirLabel.className = "alert alert-primary";
@@ -82,45 +85,36 @@ function openDir(e) {
     })
 }
 
-// Showing save-alert next to save button
-powSaveAlertPlace = document.querySelector('.pow-save-alert')
-powSaveBtn = document.querySelector('.pow-save-btn')
-powSaveBtn.addEventListener('click', saveAlert)
+let saveAlert = document.querySelector('#save-alert')
 
-function saveAlert(e) {
+function savefunc(e) {
 
-    //creating alert label
-    const saveAlertLabel = document.createElement('label')
-    let itemText;
+    console.log(`Location: ${folder}`)
+    $('#save-alert').show()
 
     //Getting the filecontents
     contents = document.querySelector('#pow-filecontents').value
-    console.log(`Filecontents ${contents}; ${typeof contents}`)
-
+    console.log(`Filecontents: \n${contents}; ${typeof contents}`)
+    
     if (folder === undefined) {
 
-        saveAlertLabel.className = 'alert alert-danger save-alert'
-        itemText = document.createTextNode('ERROR: Please open a directory to save!')
+        saveAlert.className = "alert alert-danger"
+        saveAlert.innerHTML = "ERROR: Please open a directory to save!"
+
+        setTimeout(() => $('#save-alert').hide(), 2000)
 
     } else {
 
-        saveAlertLabel.className = 'alert alert-success save-alert'
-        itemText = document.createTextNode(`File saved! ${filename.value}.pow`)
-
-        let fullname = path.join(folder[0], filename.value + '.pow')
-        console.log(`Filename: ${fullname}`)
+        saveAlert.className = "alert alert-success"
+        saveAlert.innerHTML = `File saved! ${filename.value}.pow`
+        let fullname = path.join(folder, filename.value + '.pow')
 
         fs.writeFile(fullname, contents, (err) => {
+
             if (err) {
-                saveAlertLabel.className = 'alert alert-danger save-alert'
-                let itemText = document.createTextNode(`Error: ${err}`)
+                saveAlert.className = "alert alert-danger"
+                saveAlert.innerHTML = `Error: ${err}`
             }
         })
     }
-    // Placing the alert label
-    saveAlertLabel.appendChild(itemText)
-    powSaveAlertPlace.appendChild(saveAlertLabel)
-
-    // disappear after 3seconds
-    setTimeout(() => saveAlertLabel.remove(), 3000);
 }
