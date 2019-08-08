@@ -1,2 +1,2 @@
 python3.7/
-*.pyc
+normline/__pycache__/
