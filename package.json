@@ -6,7 +6,7 @@
     "scripts": {
         "start": "electron ."
     },
-    "repository": "https://github.com/aravindhnivas/FELion-Spectrum-Analyser",
+    "repository": "https://github.com/aravindhnivas/FELion-GUI2",
     "keywords": [],
     "author": "Aravindh",
     "license": "MIT",
