@@ -8,5 +8,8 @@
     },
     "repository": "https://github.com/aravindhnivas/FELion-GUI2",
     "author": "Aravindh",
-    "license": "MIT"
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^6.0.1"
+    }
 }

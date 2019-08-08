@@ -1,4 +1,6 @@
 python3.7/
+FELion-GUI2-win32-x64/
+node_modules/
 *.pyc
 *.pdf
 *.dat
