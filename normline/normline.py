@@ -86,7 +86,7 @@ class normplot:
                     )
 
             # Wavelength and intensity of individuals without binning
-            wavelength, intensity = self.norm_line_felix()
+            wavelength, intensity, raw_intensity, relative_depletion = self.norm_line_felix()
 
             # collecting Wavelength and intensity to average spectrum with binning
             xs = np.append(xs, wavelength)
@@ -121,7 +121,7 @@ class normplot:
                 "line": {"color": f"rgb{colors[c]}"},
             }
 
-            self.export_file(fname, wavelength, intensity)
+            self.export_file(fname, wavelength, intensity, raw_intensity, relative_depletion)
 
             basefile_data = np.array(
                 Create_Baseline(felixfile, self.location,
@@ -204,18 +204,21 @@ class normplot:
                 / powCal.power(data[0])
                 / powCal.shots(data[0])
             )
+        
+        relative_depletion = 1-(data[1]/baseCal.val(data[0]))
 
-        return wavelength, intensity
+        return wavelength, intensity, data[1], relative_depletion
 
-    def export_file(self, fname, wn, inten):
+    def export_file(self, fname, wn, inten, raw_intensity, relative_depletion):
 
-        f = open("EXPORT/" + fname + ".dat", "w")
-        f.write("#DATA points as shown in lower figure of: " +
-                fname + ".pdf file!\n")
-        f.write("#wn (cm-1)       intensity\n")
+        f = open('EXPORT/' + fname + '.dat', 'w')
+        f.write("#NormalisedWavelength(cm-1)\t#NormalisedIntensity\t#RawIntensity\t#RelativeDepletion\n")
+
         for i in range(len(wn)):
-            f.write("{:8.3f}\t{:8.2f}\n".format(wn[i], inten[i]))
+            f.write(f"{wn[i]}\t{inten[i]}\t{raw_intensity[i]}\t{relative_depletion[i]}\n")
+
         f.close()
+
 
     def felix_binning(self, xs, ys):
 
