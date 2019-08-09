@@ -61,7 +61,7 @@ class normplot:
         else:
             os.chdir(self.location)
 
-        dataToSend = {"felix": {}, "base": {}, "average": {}}
+        dataToSend = {"felix": {}, "base": {}, "average": {}, "SA": {}}
         xs = np.array([], dtype=np.float)
         ys = np.array([], dtype=np.float)
 
@@ -97,6 +97,30 @@ class normplot:
                 wavelength, intensity)
 
             self.powerPlot(powerfile, wavelength)
+            ##################################
+
+            # Spectrum Analyser
+
+            wn, sa = self.saCal.get_data()
+            X = np.arange(wn.min(), wn.max(), 1)
+            
+            dataToSend["SA"][felixfile] = {
+                "x": list(wn),
+                "y": list(sa),
+                "name": f"{filename.stem}_SA",
+                "mode": "markers",
+                "line": {"color": f"rgb{colors[c]}"},
+                
+            }
+
+            dataToSend["SA"][f"{felixfile}_fit"] = {
+                "x": list(X),
+                "y": list(self.saCal.sa_cm(X)),
+                "name": f"{filename.stem}_fit",
+                "type": "scatter",
+                "line": {"color": "black"},
+            }
+            ###############################
 
             dataToSend["felix"][f"{felixfile}_histo"] = {
                 "x": list(wavelength),
@@ -185,9 +209,9 @@ class normplot:
         data = felix_read_file(felixfile)
         powCal = PowerCalibrator(powerfile)
         baseCal = BaselineCalibrator(basefile)
-        saCal = SpectrumAnalyserCalibrator(felixfile)
+        self.saCal = SpectrumAnalyserCalibrator(felixfile)
 
-        wavelength = saCal.sa_cm(data[0])
+        wavelength = self.saCal.sa_cm(data[0])
 
         # Normalise the intensity
         # multiply by 1000 because of mJ but ONLY FOR PD!!!

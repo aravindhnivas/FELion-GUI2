@@ -131,7 +131,7 @@ function normplot(e) {
                 title: "Baseline Corrected",
                 xaxis: {
                     domain: [0, 0.95],
-                    title: 'Calibrated Wavelength'
+                    title: 'Wavelength'
                 },
                 yaxis: {
                     title: 'Intesity',
@@ -150,6 +150,29 @@ function normplot(e) {
             }
 
             Plotly.newPlot('bplot', bdataPlot, blayout);
+
+            /////////////////////////////////////////////////////////
+
+            //Spectrum Analyser
+
+            let salayout = {
+                title: "Spectrum Analyser",
+                xaxis: {
+                    title: "Wavelength"
+                },
+                yaxis: {
+                    title: "SA"
+                },
+            }
+
+            let sadataPlot = [];
+            for (x in dataFromPython_norm["SA"]) {
+                sadataPlot.push(dataFromPython_norm["SA"][x])
+            }
+
+            Plotly.newPlot('saPlot', sadataPlot, salayout);
+
+            /////////////////////////////////////////////////////////
 
             /////////////////////////////////////////////////////////
 

@@ -53,7 +53,11 @@ class SpectrumAnalyserCalibrator(object):
         self.p = p
         self.sigma = sigma
         self.f = fitfunc
+        
         self.data = (data[0][data[2] > 100], data[2][data[2] > 100])
 
     def sa_cm(self, x):
         return self.f(self.p, x)
+
+    def get_data(self):
+        return self.data
