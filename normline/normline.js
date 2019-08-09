@@ -27,6 +27,8 @@ $(document).ready(function() {
         console.log(`Status: ${info}\nType: ${typeof info}`)
         info_status(info)
     });
+
+    $('#browser').click(selectFunc);
     //END
 })
 
@@ -46,9 +48,11 @@ function info_status(info) {
 
 let filePaths;
 let nofile;
-let label = document.querySelector("#label")
+let filevalue;
 let fileLocation;
 let baseName = [];
+let browser = document.querySelector("#browser")
+let label = document.querySelector("#label")
 
 function openFile(e) {
 
@@ -72,7 +76,22 @@ function openFile(e) {
         for (x in filePaths) {
             baseName.push(`| ${path.basename(filePaths[x])}`)
         }
+
         fileLocation = path.dirname(filePaths[0])
+        filelist = []
+        let temp_filelist = fs.readdirSync(fileLocation)
+        for (x in temp_filelist) {
+            x = temp_filelist[x]
+            if (x.endsWith(".felix") || x.endsWith(".cfelix")){
+                console.log(`File available: ${x}`)
+                filevalue = document.createElement("option")
+                filevalue.id = x
+                filevalue.value = x
+                filevalue.innerHTML = x
+                browser.add(filevalue)
+            }
+        }
+
         label.textContent = `${fileLocation} ${baseName}`;
         label.className = "alert alert-success"
 
@@ -83,6 +102,16 @@ function openFile(e) {
         label.className = "alert alert-danger"
     })
 }
+
+function selectFunc(e){
+
+    console.log(browser.value)
+    filePaths = []
+    filePaths.push(path.join(fileLocation, browser.value))
+    label.textContent = `${fileLocation} | ${browser.value}`
+    normplot()
+}
+
 
 /////////////////////////////////////////////////////////
 
