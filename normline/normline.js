@@ -131,7 +131,7 @@ function normplot(e) {
                 title: "Baseline Corrected",
                 xaxis: {
                     domain: [0, 0.95],
-                    title: 'Wavelength'
+                    title: 'Wavelength (cm-1)'
                 },
                 yaxis: {
                     title: 'Intesity',
@@ -158,10 +158,10 @@ function normplot(e) {
             let salayout = {
                 title: "Spectrum Analyser",
                 xaxis: {
-                    title: "Wavelength"
+                    title: "Wavelength set (cm-1)"
                 },
                 yaxis: {
-                    title: "SA"
+                    title: "SA (sm-1)"
                 },
             }
 
@@ -181,7 +181,7 @@ function normplot(e) {
             let nlayout = {
                 title: `Normalized Spectrum (delta=${delta.value})`,
                 xaxis: {
-                    title: "Calibrated Wavelength"
+                    title: "Calibrated Wavelength (cm-1)"
                 },
                 yaxis: {
                     title: "Normalised Intesity"
@@ -204,7 +204,7 @@ function normplot(e) {
             let avg_layout = {
                 title: `Average of Normalised Spectrum (delta=${delta.value})`,
                 xaxis: {
-                    title: 'Calibrated Wavelength'
+                    title: 'Calibrated Wavelength (cm-1)'
                 },
                 yaxis: {
                     title: 'Normalised Intesity',
