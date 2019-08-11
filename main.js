@@ -9,11 +9,7 @@ process.env.NODE_ENV = 'development';
 function createWindow() {
 
     mainWindow = new BrowserWindow({
-        width: 1000,
-        height: 700,
-        webPreferences: {
-            nodeIntegration: true,
-        },
+        webPreferences: { nodeIntegration: true },
 
         backgroundColor: "#3f464c",
         show: false,
@@ -22,7 +18,8 @@ function createWindow() {
     })
 
     mainWindow.once('ready-to-show', () => {
-        mainWindow.show()
+        mainWindow.maximize();
+        mainWindow.show();
     })
 
     mainWindow.loadURL(url.format({
