@@ -82,7 +82,7 @@ function openFile(e) {
         let temp_filelist = fs.readdirSync(fileLocation)
         for (x in temp_filelist) {
             x = temp_filelist[x]
-            if (x.endsWith(".felix") || x.endsWith(".cfelix")){
+            if (x.endsWith(".felix") || x.endsWith(".cfelix")) {
                 console.log(`File available: ${x}`)
                 filevalue = document.createElement("option")
                 filevalue.id = x
@@ -103,7 +103,7 @@ function openFile(e) {
     })
 }
 
-function selectFunc(e){
+function selectFunc(e) {
 
     console.log(browser.value)
     filePaths = []
@@ -328,5 +328,4 @@ function basePlot(e) {
     py.on('close', () => {
         console.log('Returned to javascript');
     });
-
 }
