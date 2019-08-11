@@ -1,3 +1,5 @@
+'use strict'
+
 //Importing required modules
 const { remote } = require('electron');
 const dialog = remote.dialog;
@@ -7,7 +9,6 @@ const spawn = require("child_process").spawn;
 const fs = require('fs')
 
 /////////////////////////////////////////////////////////
-
 $(document).ready(function() {
 
     $("#normline-open-btn").click(openFile);
@@ -58,6 +59,7 @@ function openFile(e) {
 
     const options = {
         title: "Open Felix file(s)",
+
         defaultPath: "D:",
         filters: [
             { name: 'Felix files', extensions: ['felix', 'cfelix'] },
@@ -68,45 +70,32 @@ function openFile(e) {
     };
 
     while (browser.hasChildNodes()) {
-
         browser.removeChild(browser.childNodes[0])
     }
 
-    fileOpen = dialog.showOpenDialog(mainWindow, options);
+    let fileOpen = dialog.showOpenDialog(mainWindow, options);
     fileOpen.then(value => {
 
         nofile = false;
 
         filePaths = value.filePaths;
         baseName = [];
-        for (x in filePaths) {
-            baseName.push(`| ${path.basename(filePaths[x])}`)
-        }
+        filePaths.forEach((x) => baseName.push(`| ${path.basename(x)}`))
 
         fileLocation = path.dirname(filePaths[0])
-        filelist = []
-        let temp_filelist = fs.readdirSync(fileLocation)
-
-        for (x in temp_filelist) {
-
-            x = temp_filelist[x]
-
+        fs.readdirSync(fileLocation).forEach((x) => {
             if (x.endsWith(".felix") || x.endsWith(".cfelix")) {
-
-                console.log(`File available: ${x}`)
-
                 filevalue = document.createElement("option")
                 filevalue.innerHTML = x
-
                 browser.add(filevalue)
             }
-        }
+        })
 
         label.textContent = `${fileLocation} ${baseName}`;
         label.className = "alert alert-success"
 
     }).catch((error) => {
-        console.log(`File open error: ${error}`)
+        console.error(`File open error: ${error}`)
         nofile = true;
         label.textContent = "No files selected "
         label.className = "alert alert-danger"
@@ -184,7 +173,8 @@ function normplot(e) {
             };
 
             let bdataPlot = []
-            for (x in dataFromPython_norm["base"]) {
+
+            for (let x in dataFromPython_norm["base"]) {
                 bdataPlot.push(dataFromPython_norm["base"][x])
             }
 
@@ -205,7 +195,7 @@ function normplot(e) {
             }
 
             let sadataPlot = [];
-            for (x in dataFromPython_norm["SA"]) {
+            for (let x in dataFromPython_norm["SA"]) {
                 sadataPlot.push(dataFromPython_norm["SA"][x])
             }
 
@@ -228,7 +218,7 @@ function normplot(e) {
             }
 
             let ndataPlot = [];
-            for (x in dataFromPython_norm["felix"]) {
+            for (let x in dataFromPython_norm["felix"]) {
                 ndataPlot.push(dataFromPython_norm["felix"][x])
             }
 
@@ -251,7 +241,7 @@ function normplot(e) {
             }
 
             let avg_dataPlot = [];
-            for (x in dataFromPython_norm["average"]) {
+            for (let x in dataFromPython_norm["average"]) {
                 avg_dataPlot.push(dataFromPython_norm["average"][x])
             }
 
