@@ -7,15 +7,22 @@ let mainWindow
 process.env.NODE_ENV = 'development';
 
 function createWindow() {
+
     mainWindow = new BrowserWindow({
         width: 1000,
         height: 700,
         webPreferences: {
             nodeIntegration: true,
         },
+
         backgroundColor: "#3f464c",
+        show: false,
         //icon: path.join(__dirname, 'FELion_Icon3.png')
 
+    })
+
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show()
     })
 
     mainWindow.loadURL(url.format({
