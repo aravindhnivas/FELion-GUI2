@@ -13,6 +13,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
         },
+        backgroundColor: "#3f464c",
         //icon: path.join(__dirname, 'FELion_Icon3.png')
 
     })
@@ -21,9 +22,9 @@ function createWindow() {
         pathname: path.join(__dirname, 'index.html'),
         protocol: 'file:',
         slashes: true
-        
+
     }));
-    
+
     mainWindow.on('closed', () => mainWindow = null)
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     Menu.setApplicationMenu(mainMenu);
