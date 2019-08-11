@@ -64,7 +64,13 @@ function openFile(e) {
             { name: 'All Files', extensions: ['*'] }
         ],
         properties: ['openFile', 'multiSelections'],
+
     };
+
+    while (browser.hasChildNodes()) {
+
+        browser.removeChild(browser.childNodes[0])
+    }
 
     fileOpen = dialog.showOpenDialog(mainWindow, options);
     fileOpen.then(value => {
@@ -80,14 +86,18 @@ function openFile(e) {
         fileLocation = path.dirname(filePaths[0])
         filelist = []
         let temp_filelist = fs.readdirSync(fileLocation)
+
         for (x in temp_filelist) {
+
             x = temp_filelist[x]
+
             if (x.endsWith(".felix") || x.endsWith(".cfelix")) {
+
                 console.log(`File available: ${x}`)
+
                 filevalue = document.createElement("option")
-                filevalue.id = x
-                filevalue.value = x
                 filevalue.innerHTML = x
+
                 browser.add(filevalue)
             }
         }
