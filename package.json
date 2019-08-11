@@ -10,7 +10,8 @@
     "author": "Aravindh",
     "license": "MIT",
     "devDependencies": {
-        "electron": "^6.0.1"
+        "electron": "^6.0.1",
+        "electron-navigation": "^1.5.8"
     },
     "dependencies": {}
 }
