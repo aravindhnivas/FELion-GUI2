@@ -169,7 +169,7 @@ function normplot(e) {
                     anchor: 'x',
                     overlaying: 'y',
                     side: 'right',
-                    title: 'Power mJ',
+                    title: 'Power mJ'
                 }
             };
 
@@ -190,7 +190,7 @@ function normplot(e) {
                     title: "Wavelength set (cm-1)"
                 },
                 yaxis: {
-                    title: "SA (sm-1)"
+                    title: "SA (cm-1)"
                 },
             }
 
