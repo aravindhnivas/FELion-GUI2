@@ -183,6 +183,7 @@ class normplot:
                 "yaxis": "y2",
                 #"line": {"color": f"rgb{colors[c]}"},
                 "marker": {"color": f"rgb{colors[c]}"},
+                "visible": "legendonly"
             }
 
             c += 1
