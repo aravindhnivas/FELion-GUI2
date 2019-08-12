@@ -59,7 +59,9 @@ const save_path = path.join(remote.app.getPath('documents'), 'FELion_save_data.j
 fs.readFile(save_path, (err, data) => {
 
     if (err) {
+
         save_data = { location: "", filelists: [] };
+        nofileSelected();
     } else {
         save_data = JSON.parse(data);
 
