@@ -158,18 +158,20 @@ function normplot(e) {
             let blayout = {
                 title: "Baseline Corrected",
                 xaxis: {
-                    domain: [0, 0.95],
+                    //domain: [0, 0.95],
                     title: 'Wavelength (cm-1)'
                 },
                 yaxis: {
                     title: 'Intesity',
                 },
-                yaxis2: {
+                /**
+                 * yaxis2: {
                     anchor: 'x',
                     overlaying: 'y',
                     side: 'right',
                     title: 'Power mJ'
                 }
+                 */
             };
 
             let bdataPlot = []
@@ -185,12 +187,24 @@ function normplot(e) {
             //Spectrum Analyser
 
             let salayout = {
-                title: "Spectrum Analyser",
+
+                title: "Spectrum and Power Analyser",
+
                 xaxis: {
+                    domain: [0, 0.5],
                     title: "Wavelength set (cm-1)"
                 },
                 yaxis: {
                     title: "SA (cm-1)"
+                },
+
+                xaxis2: {
+                    domain: [0.5, 1],
+                    title: "Power Analyser"
+                },
+                yaxis2: {
+                    anchor: 'x2',
+                    title: "Power (mJ)"
                 },
             }
 
@@ -199,7 +213,14 @@ function normplot(e) {
                 sadataPlot.push(dataFromPython_norm["SA"][x])
             }
 
-            Plotly.newPlot('saPlot', sadataPlot, salayout);
+            //Power Analyser
+
+            let powdataPlot = [];
+            for (let x in dataFromPython_norm["pow"]) {
+                powdataPlot.push(dataFromPython_norm["pow"][x])
+            }
+
+            Plotly.newPlot('saPlot', sadataPlot.concat(powdataPlot), salayout);
 
             /////////////////////////////////////////////////////////
 
