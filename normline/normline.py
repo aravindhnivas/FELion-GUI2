@@ -173,13 +173,16 @@ class normplot:
                 "name": felixfile,
                 "mode": "lines",
                 "line": {"color": f"rgb{colors[c]}"},
+                "legendgroup": f'group{group}'
             }
+
             dataToSend["base"][f"{felixfile}_line"] = {
                 "x": list(base_line[0]),
                 "y": list(base_line[1]),
                 "name": f"{filename.stem}_base",
                 "mode": "lines+markers",
                 "marker": {"color": "black"},
+                "legendgroup": f'group{group}',
                 "showlegend": False,
             }
 
