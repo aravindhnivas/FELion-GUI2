@@ -7,11 +7,12 @@
         "start": "electron ."
     },
     "repository": "https://github.com/aravindhnivas/FELion-GUI2",
+    
     "author": "Aravindh",
     "license": "MIT",
+
     "devDependencies": {
-        "electron": "^6.0.1",
-        "electron-navigation": "^1.5.8"
+        "electron": "^6.0.1"
     },
     "dependencies": {}
 }
