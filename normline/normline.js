@@ -205,7 +205,7 @@ function normplot(e) {
 
                 xaxis2: {
                     domain: [0.5, 1],
-                    title: "Power Analyser"
+                    title: "Wavelength (cm-1)"
                 },
                 yaxis2: {
                     anchor: 'x2',
