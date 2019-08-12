@@ -67,6 +67,7 @@ class normplot:
         ys = np.array([], dtype=np.float)
 
         c = 0
+        group = 1
 
         for filename in received_files:
 
@@ -111,7 +112,7 @@ class normplot:
                 "name": f"{filename.stem}_SA",
                 "mode": "markers",
                 "line": {"color": f"rgb{colors[c]}"},
-                
+                "legendgroup": f'group{group}',
             }
 
             dataToSend["SA"][f"{felixfile}_fit"] = {
@@ -120,7 +121,8 @@ class normplot:
                 "name": f"{filename.stem}_fit",
                 "type": "scatter",
                 "line": {"color": "black"},
-                "showlegend": False
+                "showlegend": False,
+                "legendgroup": f'group{group}',
             }
             
             ###############################
@@ -128,22 +130,24 @@ class normplot:
             dataToSend["felix"][f"{felixfile}_histo"] = {
                 "x": list(wavelength),
                 "y": list(intensity),
-                "name": f"{filename.stem}_bar",
+                "name": felixfile,
                 "type": "bar",
                 "marker": {"color": f"rgb{colors[c]}"},
+                "legendgroup": 'group',
             }
             dataToSend["felix"][felixfile] = {
                 "x": list(wavelength),
                 "y": list(intensity),
-                "name": f"{filename.stem}_norm",
+                "name": felixfile,
                 "type": "scatter",
                 "line": {"color": f"rgb{colors[c]}"},
+                #"legendgroup": 'group2'
             }
 
             dataToSend["average"][felixfile] = {
                 "x": list(wavelength),
                 "y": list(intensity),
-                "name": f"{filename.stem}_norm",
+                "name": felixfile,
                 "mode": "markers",
                 "line": {"color": f"rgb{colors[c]}"},
             }
@@ -166,7 +170,7 @@ class normplot:
             dataToSend["base"][f"{felixfile}_base"] = {
                 "x": list(base_felix[0]),
                 "y": list(base_felix[1]),
-                "name": f"{filename.stem}_felix",
+                "name": felixfile,
                 "mode": "lines",
                 "line": {"color": f"rgb{colors[c]}"},
             }
@@ -176,6 +180,7 @@ class normplot:
                 "name": f"{filename.stem}_base",
                 "mode": "lines+markers",
                 "marker": {"color": "black"},
+                "showlegend": False,
             }
 
             dataToSend["pow"][powerfile] = {
@@ -186,9 +191,10 @@ class normplot:
                 "xaxis": "x2",
                 "yaxis": "y2",
                 "marker": {"color": f"rgb{colors[c]}"},
+                "legendgroup": f'group{group}',
             }
             
-            
+            group += 1
             c += 2
 
         binns, intens = self.felix_binning(xs, ys)
