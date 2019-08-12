@@ -73,13 +73,23 @@
         <div class="row mt-3">
 
             <!--Open Button-->
-            <div class="col-md-2">
-                <button type="button" class="btn btn-secondary" id="normline-open-btn">Open File</button>
+            <div class="col">
+                <button type="button" class="btn btn-secondary" id="normline-open-btn" data-toggle="tooltip" data-placement="right" title="To open multiple files">Open File(s)</button>
             </div>
 
-            <!--Filename Label-->
-            <div class="col-md-7 mr-auto" id="labelHolder"><label id="label"></label></div>
+        </div>
 
+        <!--File Labels-->
+        <div class="row mt-3">
+            <div class="col">
+                <label id="locationLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right" title="Selected location">Location:</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label id="fileLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right" title="Selected files">Files:</label>
+            </div>
         </div>
 
         <!--Buttons-->
@@ -117,8 +127,8 @@
             <div class="col-sm-3">
 
                 <div class="form-group">
-                    <label>Select Files</label>
-                    <select multiple class="form-control" id="browser"></select>
+                    <label>Select File</label>
+                    <select multiple class="form-control" id="browser" data-toggle="tooltip" data-placement="right" title="Files from the selected location"></select>
                 </div>
 
             </div>

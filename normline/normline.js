@@ -9,13 +9,25 @@ const spawn = require("child_process").spawn;
 const fs = require('fs')
 
 /////////////////////////////////////////////////////////
+const helpOn = () => {
+    $('[data-toggle="tooltip"]').tooltip("enable");
+    $('[data-toggle="tooltip"]').tooltip("show");
+}
+
+const helpOff = () => {
+    $('[data-toggle="tooltip"]').tooltip("hide");
+    $('[data-toggle="tooltip"]').tooltip("disable");
+}
+
 $(document).ready(function() {
 
     $("#normline-open-btn").click(openFile);
     $("#normlinePlot-btn").click(normplot);
     $("#baseline-btn").click(basePlot);
+    $('#browser').click(selectFunc);
 
-    $(() => $('[data-toggle="tooltip"]').tooltip("disable"))
+    helpOn()
+    setTimeout(helpOff, 5000)
 
     // Info  display toggle
     $("#help").bootstrapToggle({
@@ -25,35 +37,24 @@ $(document).ready(function() {
 
     $('#help').change(function() {
         let info = $(this).prop('checked')
-        console.log(`Status: ${info}\nType: ${typeof info}`)
-        info_status(info)
+        if(info){helpOn()} else {helpOff()}
     });
-
-    $('#browser').click(selectFunc);
     //END
 })
 
-function info_status(info) {
-    if (info) {
-        $(() => $('[data-toggle="tooltip"]').tooltip("enable"))
-        $(() => $('[data-toggle="tooltip"]').tooltip("show"))
-    } else {
-        $(() => $('[data-toggle="tooltip"]').tooltip("hide"))
-        $(() => $('[data-toggle="tooltip"]').tooltip("disable"))
-    }
-}
 
 /////////////////////////////////////////////////////////
 
 //Showing opened file label
 
 let filePaths;
-let nofile;
+let nofile=true;
 let filevalue;
 let fileLocation;
 let baseName = [];
 let browser = document.querySelector("#browser")
-let label = document.querySelector("#label")
+let locationLabel = document.querySelector("#locationLabel")
+let fileLabel = document.querySelector("#fileLabel")
 
 function openFile(e) {
 
@@ -80,7 +81,7 @@ function openFile(e) {
 
         filePaths = value.filePaths;
         baseName = [];
-        filePaths.forEach((x) => baseName.push(`| ${path.basename(x)}`))
+        filePaths.forEach((x) => baseName.push(`${path.basename(x)}, `))
 
         fileLocation = path.dirname(filePaths[0])
         fs.readdirSync(fileLocation).forEach((x) => {
@@ -91,14 +92,21 @@ function openFile(e) {
             }
         })
 
-        label.textContent = `${fileLocation} ${baseName}`;
-        label.className = "alert alert-success"
+        locationLabel.innerHTML = `Location: ${fileLocation}`;
+        fileLabel.innerHTML = `Files: ${baseName}`
+
+        locationLabel.className = "alert alert-info"
+        fileLabel.className = "alert alert-info"
 
     }).catch((error) => {
         console.error(`File open error: ${error}`)
         nofile = true;
-        label.textContent = "No files selected "
-        label.className = "alert alert-danger"
+
+        locationLabel.innerHTML = `Select location`;
+        fileLabel.innerHTML = `No Files selected`
+
+        locationLabel.className = "alert alert-danger"
+        fileLabel.className = "alert alert-danger"
     })
 }
 
@@ -107,7 +115,7 @@ function selectFunc(e) {
     console.log(browser.value)
     filePaths = []
     filePaths.push(path.join(fileLocation, browser.value))
-    label.textContent = `${fileLocation} | ${browser.value}`
+    fileLabel.innerHTML = browser.value
     normplot()
 }
 
@@ -129,8 +137,12 @@ function normplot(e) {
 
     if (nofile) {
 
-        label.textContent = "No files selected "
-        label.className = "alert alert-danger"
+        locationLabel.innerHTML = `Select location`;
+        fileLabel.innerHTML = `No Files selected`
+
+        locationLabel.className = "alert alert-danger"
+        fileLabel.className = "alert alert-danger"
+
         normlineBtn.className = "btn btn-danger"
         return setTimeout(() => normlineBtn.className = "btn btn-primary", 2000)
     }
@@ -164,14 +176,6 @@ function normplot(e) {
                 yaxis: {
                     title: 'Intesity',
                 },
-                /**
-                 * yaxis2: {
-                    anchor: 'x',
-                    overlaying: 'y',
-                    side: 'right',
-                    title: 'Power mJ'
-                }
-                 */
             };
 
             let bdataPlot = []
@@ -183,6 +187,7 @@ function normplot(e) {
             Plotly.newPlot('bplot', bdataPlot, blayout);
 
             /////////////////////////////////////////////////////////
+            // Spectrum and Power Analyer
 
             //Spectrum Analyser
 
@@ -223,9 +228,6 @@ function normplot(e) {
             Plotly.newPlot('saPlot', sadataPlot.concat(powdataPlot), salayout);
 
             /////////////////////////////////////////////////////////
-
-            /////////////////////////////////////////////////////////
-
             //Normalised plot
 
             let nlayout = {
@@ -246,9 +248,6 @@ function normplot(e) {
             Plotly.newPlot('nplot', ndataPlot, nlayout);
 
             /////////////////////////////////////////////////////////
-
-            /////////////////////////////////////////////////////////
-
             //Averaged normalised plot
 
             let avg_layout = {
@@ -325,8 +324,12 @@ function basePlot(e) {
 
     if (nofile) {
 
-        label.textContent = "No files selected "
-        label.className = "alert alert-danger"
+        locationLabel.innerHTML = `Select location`;
+        fileLabel.innerHTML = `No Files selected`
+
+        locationLabel.className = "alert alert-danger"
+        fileLabel.className = "alert alert-danger"
+
         baselineBtn.className = "btn btn-danger"
         return setTimeout(() => baselineBtn.className = "btn btn-primary", 2000)
     }
