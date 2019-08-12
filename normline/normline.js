@@ -12,11 +12,11 @@ const helpOn = () => {
     $('[data-toggle="tooltip"]').tooltip("enable");
     $('[data-toggle="tooltip"]').tooltip("show");
 }
+
 const helpOff = () => {
     $('[data-toggle="tooltip"]').tooltip("hide");
     $('[data-toggle="tooltip"]').tooltip("disable");
 }
-
 /////////////////////////////////////////////////////////
 
 $(document).ready(function () {
@@ -39,6 +39,7 @@ $(document).ready(function () {
         let info = $(this).prop('checked')
         if (info) { helpOn() } else { helpOff() }
     });
+    readfile() //Read last used felix file from local storage
     //END
 })
 
@@ -56,27 +57,25 @@ let fileLabel = document.querySelector("#fileLabel")
 const save_path = path.join(remote.app.getPath('documents'), 'FELion_save_data.json')
 /////////////////////////////////////////////////////////
 
-fs.readFile(save_path, (err, data) => {
+function readfile() {
+    fs.readFile(save_path, (err, data) => {
+        if (err) {
+            save_data = { location: "", filelists: [] };
+            nofileSelected();
+        } else {
+            save_data = JSON.parse(data);
+            fileLocation = save_data.location
+            filePaths = save_data.filelists;
+            filePaths.forEach((x) => baseName.push(`${path.basename(x)}, `))
 
-    if (err) {
+            fileSelected(filePaths, baseName)
+            browser_update(fileLocation)
+            //normplot()
+            console.log(`Read file: ${save_data}`);
+        }
+    })
+};
 
-        save_data = { location: "", filelists: [] };
-        nofileSelected();
-    } else {
-        save_data = JSON.parse(data);
-
-        fileLocation = save_data.location
-        filePaths = save_data.filelists;
-        filePaths.forEach((x) => baseName.push(`${path.basename(x)}, `))
-
-        fileSelected(filePaths, baseName)
-        browser_update(fileLocation)
-        //normplot()
-        console.log(`Read file: ${save_data}`);
-    }
-});
-
-/////////////////////////////////////////////////////////
 function writeFileToDisk(location, files) {
     // Writing data information to local disk
     save_data.location = location
@@ -121,36 +120,34 @@ function openFile(e) {
 
     const options = {
         title: "Open Felix file(s)",
-
-        defaultPath: "D:",
         filters: [
             { name: 'Felix files', extensions: ['felix', 'cfelix'] },
             { name: 'All Files', extensions: ['*'] }
         ],
         properties: ['openFile', 'multiSelections'],
-
     };
 
+    // Clearing filename list in Select file box
     while (browser.hasChildNodes()) {
         browser.removeChild(browser.childNodes[0])
     }
 
-    let fileOpen = dialog.showOpenDialog(mainWindow, options);
-    fileOpen.then(value => {
+    // Opening file dialog
+    dialog.showOpenDialog(mainWindow, options).then(value => {
 
         filePaths = value.filePaths;
         baseName = [];
         filePaths.forEach((x) => baseName.push(`${path.basename(x)}, `))
         fileLocation = path.dirname(filePaths[0])
 
-        fileSelected(fileLocation, baseName)
-        browser_update(fileLocation)
-        writeFileToDisk(fileLocation, filePaths)
+        fileSelected(fileLocation, baseName) //Display selected file label with location
+        browser_update(fileLocation) //Update the filename list content in selected file box
+        writeFileToDisk(fileLocation, filePaths) //Write the filelocation and filename lists to local disk for future use.
 
     }).catch((error) => {
         console.error(`File open error: ${error}`)
         nofile = true;
-        nofileSelected()
+        nofileSelected() //Display no file selected label with danger sign
     })
 }
 
@@ -163,7 +160,6 @@ function selectFunc(e) {
     normplot()
     writeFileToDisk(fileLocation, filePaths)
 }
-
 /////////////////////////////////////////////////////////
 let dataFromPython_norm;
 let normlineBtn = document.querySelector("#normlinePlot-btn")
@@ -171,23 +167,79 @@ let footer = document.querySelector("#footer")
 let loading = document.querySelector("#loading")
 let loading_parent = document.querySelector("#loading-parent")
 let error_occured = false
+const pythonPath = path.join(__dirname, "..", "python3.7", "python");
+/////////////////////////////////////////////////////////
+
+function plot(mainTitle, xtitle, ytitle, data, plotArea, subplot=false, subplot_obj=null) {
+
+    if(!subplot){
+
+        let dataLayout = {
+            title: mainTitle,
+            xaxis: {
+                title: xtitle
+            },
+            yaxis: {
+                title: ytitle
+            },
+        };
+    
+        let dataPlot = []
+    
+        for (let x in data) {
+            dataPlot.push(data[x])
+        }
+        Plotly.newPlot(plotArea, dataPlot, dataLayout);
+
+    } else {
+
+        let dataLayout = {
+
+            title: mainTitle,
+
+            xaxis: {
+                domain: [0, 0.5],
+                title: xtitle
+            },
+            yaxis: {
+                title: ytitle
+            },
+
+            xaxis2: {
+                domain: [0.5, 1],
+                title: subplot_obj["x2"]
+            },
+            yaxis2: {
+                anchor: 'x2',
+                title: subplot_obj["y2"]
+            },
+        }
+
+        let dataPlot1 = [];
+        for (let x in data) {
+            dataPlot1.push(data[x])
+        }
+
+        let dataPlot2 = [];
+        for (let x in subplot_obj["data2"]) {
+            dataPlot2.push(subplot_obj["data2"][x])
+        }
+
+        Plotly.newPlot(plotArea, dataPlot1.concat(dataPlot2), dataLayout);
+    }
+    
+}
 /////////////////////////////////////////////////////////
 
 function normplot(e) {
 
-    console.log("\n\nNormline Spectrum")
-    console.log("I am in javascript now!!")
-    console.log(`File: ${filePaths}; ${typeof filePaths}`)
-
     if (nofile) {
-
         nofileSelected()
-
         normlineBtn.className = "btn btn-danger"
         return setTimeout(() => normlineBtn.className = "btn btn-primary", 2000)
     }
 
-    const py = spawn(path.join(__dirname, "..", "python3.7", "python"), [path.join(__dirname, "./normline.py"), [filePaths, delta.value]]);
+    const py = spawn(pythonPath, [path.join(__dirname, "./normline.py"), [filePaths, delta.value]]);
 
     loading_parent.className = "alert alert-primary"
     loading.innerText = "Loading"
@@ -198,6 +250,7 @@ function normplot(e) {
         loading.innerText = "Loading"
 
         try {
+
             console.log("Receiving data")
             dataFromPython_norm = data.toString('utf8')
             //console.log("Before JSON parse (from python):\n" + dataFromPython_norm)
@@ -205,114 +258,29 @@ function normplot(e) {
             console.log("After JSON parse :" + dataFromPython_norm)
 
             /////////////////////////////////////////////////////////
-            // Baseline plot
+            plot("Baseline Corrected", 'Wavelength (cm-1)', 'Intesity', dataFromPython_norm["base"], 'bplot')
+            plot(`Normalized Spectrum (delta=${delta.value})`, 'Calibrated Wavelength (cm-1)', 'Normalised Intesity', dataFromPython_norm["felix"], 'nplot')
+            plot(`Average of Normalised Spectrum (delta=${delta.value})`, 'Calibrated Wavelength (cm-1)', 'Normalised Intesity', dataFromPython_norm["average"], 'avgplot')
 
-            let blayout = {
-                title: "Baseline Corrected",
-                xaxis: {
-                    //domain: [0, 0.95],
-                    title: 'Wavelength (cm-1)'
-                },
-                yaxis: {
-                    title: 'Intesity',
-                },
-            };
-
-            let bdataPlot = []
-
-            for (let x in dataFromPython_norm["base"]) {
-                bdataPlot.push(dataFromPython_norm["base"][x])
-            }
-
-            Plotly.newPlot('bplot', bdataPlot, blayout);
-
-            /////////////////////////////////////////////////////////
             // Spectrum and Power Analyer
-
-            //Spectrum Analyser
-
-            let salayout = {
-
-                title: "Spectrum and Power Analyser",
-
-                xaxis: {
-                    domain: [0, 0.5],
-                    title: "Wavelength set (cm-1)"
-                },
-                yaxis: {
-                    title: "SA (cm-1)"
-                },
-
-                xaxis2: {
-                    domain: [0.5, 1],
-                    title: "Wavelength (cm-1)"
-                },
-                yaxis2: {
-                    anchor: 'x2',
-                    title: "Power (mJ)"
-                },
-            }
-
-            let sadataPlot = [];
-            for (let x in dataFromPython_norm["SA"]) {
-                sadataPlot.push(dataFromPython_norm["SA"][x])
-            }
-
-            //Power Analyser
-
-            let powdataPlot = [];
-            for (let x in dataFromPython_norm["pow"]) {
-                powdataPlot.push(dataFromPython_norm["pow"][x])
-            }
-
-            Plotly.newPlot('saPlot', sadataPlot.concat(powdataPlot), salayout);
-
-            /////////////////////////////////////////////////////////
-            //Normalised plot
-
-            let nlayout = {
-                title: `Normalized Spectrum (delta=${delta.value})`,
-                xaxis: {
-                    title: "Calibrated Wavelength (cm-1)"
-                },
-                yaxis: {
-                    title: "Normalised Intesity"
-                },
-            }
-
-            let ndataPlot = [];
-            for (let x in dataFromPython_norm["felix"]) {
-                ndataPlot.push(dataFromPython_norm["felix"][x])
-            }
-
-            Plotly.newPlot('nplot', ndataPlot, nlayout);
-
-            /////////////////////////////////////////////////////////
-            //Averaged normalised plot
-
-            let avg_layout = {
-                title: `Average of Normalised Spectrum (delta=${delta.value})`,
-                xaxis: {
-                    title: 'Calibrated Wavelength (cm-1)'
-                },
-                yaxis: {
-                    title: 'Normalised Intesity',
-                },
-            }
-
-            let avg_dataPlot = [];
-            for (let x in dataFromPython_norm["average"]) {
-                avg_dataPlot.push(dataFromPython_norm["average"][x])
-            }
-
-            Plotly.newPlot('avgplot', avg_dataPlot, avg_layout);
-
-            /////////////////////////////////////////////////////////
+            plot(
+                "Spectrum and Power Analyser",
+                "Wavelength set (cm-1)",
+                "SA (cm-1)",
+                dataFromPython_norm["SA"],
+                'saPlot',
+                true,
+                {
+                    x2: "Wavelength (cm-1)",
+                    y2: "Power (mJ)",
+                    data2: dataFromPython_norm["pow"]
+                }
+            )
 
             console.log("Graph Plotted")
 
         } catch (err) {
-            console.error("Error Occured in javascript code: " + err)
+            console.error("Error Occured in javascript code: " + err.message)
         }
 
         /////////////////////////////////////////////////////////
@@ -332,40 +300,36 @@ function normplot(e) {
         if (error_occured) {
 
             console.log(`Error occured ${error_occured}`);
+
             loading_parent.style.visibility = "visible"
             loading_parent.className = "alert alert-danger"
             loading.innerText = "Error! (Some file might be missing)"
+
             error_occured = false
 
         } else {
 
             footer.parentElement.className = "card-footer text-muted"
             footer.parentElement.style.position = "relative"
-            footer.parentElement.style.bottom = 0
             loading_parent.style.visibility = "hidden"
 
         }
 
     });
 }
-
 /////////////////////////////////////////////////////////
 
 let baselineBtn = document.querySelector("#baseline-btn")
 
 function basePlot(e) {
 
-    console.log("\n\nBaseline Correction")
-    console.log("I am in javascript now!!")
-    console.log(`File: ${filePaths}; ${typeof filePaths}`)
-    console.log("--------------------------")
-
     if (nofile) {
         nofileSelected()
         baselineBtn.className = "btn btn-danger"
         return setTimeout(() => baselineBtn.className = "btn btn-primary", 2000)
     }
-    const py = spawn(path.join(__dirname, "..", "python3.7", "python"), [path.join(__dirname, "./baseline.py"), [filePaths]]);
+    
+    const py = spawn(pythonPath, [path.join(__dirname, "./baseline.py"), [filePaths]]);
 
     py.stdout.on('data', (data) => {
         try {
