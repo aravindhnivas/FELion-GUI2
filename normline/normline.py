@@ -7,6 +7,7 @@ import os
 import shutil
 from os.path import isdir, isfile
 from pathlib import Path as pt
+from itertools import cycle
 
 # Data analysis
 import numpy as np
@@ -61,7 +62,7 @@ class normplot:
         else:
             os.chdir(self.location)
 
-        dataToSend = {"felix": {}, "base": {}, "average": {}, "SA": {}}
+        dataToSend = {"felix": {}, "base": {}, "average": {}, "SA": {}, "pow": {}}
         xs = np.array([], dtype=np.float)
         ys = np.array([], dtype=np.float)
 
@@ -119,7 +120,9 @@ class normplot:
                 "name": f"{filename.stem}_fit",
                 "type": "scatter",
                 "line": {"color": "black"},
+                "showlegend": False
             }
+            
             ###############################
 
             dataToSend["felix"][f"{felixfile}_histo"] = {
@@ -175,18 +178,18 @@ class normplot:
                 "marker": {"color": "black"},
             }
 
-            dataToSend["base"][powerfile] = {
+            dataToSend["pow"][powerfile] = {
                 "x": list(self.power_wn),
                 "y": list(self.power_mj),
                 "name": powerfile,
                 "mode": "markers",
+                "xaxis": "x2",
                 "yaxis": "y2",
-                #"line": {"color": f"rgb{colors[c]}"},
                 "marker": {"color": f"rgb{colors[c]}"},
-                "visible": "legendonly"
             }
-
-            c += 1
+            
+            
+            c += 2
 
         binns, intens = self.felix_binning(xs, ys)
         
