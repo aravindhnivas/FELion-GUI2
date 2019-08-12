@@ -69,7 +69,7 @@ fs.readFile(save_path, (err, data) => {
 
         fileSelected(filePaths, baseName)
         browser_update(fileLocation)
-        normplot()
+        //normplot()
         console.log(`Read file: ${save_data}`);
     }
 });
