@@ -1,5 +1,4 @@
 'use strict'
-
 //Importing required modules
 const { remote } = require('electron');
 const dialog = remote.dialog;
@@ -13,21 +12,22 @@ const helpOn = () => {
     $('[data-toggle="tooltip"]').tooltip("enable");
     $('[data-toggle="tooltip"]').tooltip("show");
 }
-
 const helpOff = () => {
     $('[data-toggle="tooltip"]').tooltip("hide");
     $('[data-toggle="tooltip"]').tooltip("disable");
 }
 
-$(document).ready(function() {
+/////////////////////////////////////////////////////////
+
+$(document).ready(function () {
 
     $("#normline-open-btn").click(openFile);
     $("#normlinePlot-btn").click(normplot);
     $("#baseline-btn").click(basePlot);
     $('#browser').click(selectFunc);
 
-    helpOn()
-    setTimeout(helpOff, 5000)
+    //helpOn()
+    //setTimeout(helpOff, 5000)
 
     // Info  display toggle
     $("#help").bootstrapToggle({
@@ -35,26 +35,85 @@ $(document).ready(function() {
         off: 'Help'
     });
 
-    $('#help').change(function() {
+    $('#help').change(function () {
         let info = $(this).prop('checked')
-        if(info){helpOn()} else {helpOff()}
+        if (info) { helpOn() } else { helpOff() }
     });
     //END
 })
 
-
 /////////////////////////////////////////////////////////
-
-//Showing opened file label
-
 let filePaths;
-let nofile=true;
+let nofile = true;
 let filevalue;
 let fileLocation;
 let baseName = [];
+let save_data;
+
 let browser = document.querySelector("#browser")
 let locationLabel = document.querySelector("#locationLabel")
 let fileLabel = document.querySelector("#fileLabel")
+const save_path = path.join(remote.app.getPath('documents'), 'FELion_save_data.json')
+/////////////////////////////////////////////////////////
+
+fs.readFile(save_path, (err, data) => {
+
+    if (err) {
+        save_data = { location: "", filelists: [] };
+    } else {
+        save_data = JSON.parse(data);
+
+        fileLocation = save_data.location
+        filePaths = save_data.filelists;
+        filePaths.forEach((x) => baseName.push(`${path.basename(x)}, `))
+
+        fileSelected(filePaths, baseName)
+        browser_update(fileLocation)
+        normplot()
+        console.log(`Read file: ${save_data}`);
+    }
+});
+
+/////////////////////////////////////////////////////////
+function writeFileToDisk(location, files) {
+    // Writing data information to local disk
+    save_data.location = location
+    save_data.filelists = files
+    fs.writeFile(save_path, JSON.stringify(save_data), err => {
+        if (err) throw err;
+        console.log('Successfully wrote file');
+    })
+}
+
+function browser_update(location) {
+
+    // Adding avaiable files to the display list
+    fs.readdirSync(location).forEach((x) => {
+
+        if (x.endsWith(".felix") || x.endsWith(".cfelix")) {
+            filevalue = document.createElement("option")
+            filevalue.innerHTML = x
+            browser.add(filevalue)
+        }
+    })
+
+}
+
+function nofileSelected() {
+    locationLabel.innerHTML = `Select location`;
+    fileLabel.innerHTML = `No Files selected`
+    locationLabel.className = "alert alert-danger"
+    fileLabel.className = "alert alert-danger"
+}
+
+function fileSelected(location, files) {
+
+    nofile = false;
+    locationLabel.innerHTML = `Location: ${location}`;
+    fileLabel.innerHTML = `Files: ${files}`
+    locationLabel.className = "alert alert-info"
+    fileLabel.className = "alert alert-info"
+}
 
 function openFile(e) {
 
@@ -77,36 +136,19 @@ function openFile(e) {
     let fileOpen = dialog.showOpenDialog(mainWindow, options);
     fileOpen.then(value => {
 
-        nofile = false;
-
         filePaths = value.filePaths;
         baseName = [];
         filePaths.forEach((x) => baseName.push(`${path.basename(x)}, `))
-
         fileLocation = path.dirname(filePaths[0])
-        fs.readdirSync(fileLocation).forEach((x) => {
-            if (x.endsWith(".felix") || x.endsWith(".cfelix")) {
-                filevalue = document.createElement("option")
-                filevalue.innerHTML = x
-                browser.add(filevalue)
-            }
-        })
 
-        locationLabel.innerHTML = `Location: ${fileLocation}`;
-        fileLabel.innerHTML = `Files: ${baseName}`
-
-        locationLabel.className = "alert alert-info"
-        fileLabel.className = "alert alert-info"
+        fileSelected(fileLocation, baseName)
+        browser_update(fileLocation)
+        writeFileToDisk(fileLocation, filePaths)
 
     }).catch((error) => {
         console.error(`File open error: ${error}`)
         nofile = true;
-
-        locationLabel.innerHTML = `Select location`;
-        fileLabel.innerHTML = `No Files selected`
-
-        locationLabel.className = "alert alert-danger"
-        fileLabel.className = "alert alert-danger"
+        nofileSelected()
     })
 }
 
@@ -117,17 +159,17 @@ function selectFunc(e) {
     filePaths.push(path.join(fileLocation, browser.value))
     fileLabel.innerHTML = browser.value
     normplot()
+    writeFileToDisk(fileLocation, filePaths)
 }
 
-
 /////////////////////////////////////////////////////////
-
 let dataFromPython_norm;
 let normlineBtn = document.querySelector("#normlinePlot-btn")
 let footer = document.querySelector("#footer")
 let loading = document.querySelector("#loading")
 let loading_parent = document.querySelector("#loading-parent")
 let error_occured = false
+/////////////////////////////////////////////////////////
 
 function normplot(e) {
 
@@ -137,11 +179,7 @@ function normplot(e) {
 
     if (nofile) {
 
-        locationLabel.innerHTML = `Select location`;
-        fileLabel.innerHTML = `No Files selected`
-
-        locationLabel.className = "alert alert-danger"
-        fileLabel.className = "alert alert-danger"
+        nofileSelected()
 
         normlineBtn.className = "btn btn-danger"
         return setTimeout(() => normlineBtn.className = "btn btn-primary", 2000)
@@ -160,7 +198,7 @@ function normplot(e) {
         try {
             console.log("Receiving data")
             dataFromPython_norm = data.toString('utf8')
-                //console.log("Before JSON parse (from python):\n" + dataFromPython_norm)
+            //console.log("Before JSON parse (from python):\n" + dataFromPython_norm)
             dataFromPython_norm = JSON.parse(dataFromPython_norm)
             console.log("After JSON parse :" + dataFromPython_norm)
 
@@ -311,8 +349,6 @@ function normplot(e) {
 
 /////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////
-
 let baselineBtn = document.querySelector("#baseline-btn")
 
 function basePlot(e) {
@@ -323,13 +359,7 @@ function basePlot(e) {
     console.log("--------------------------")
 
     if (nofile) {
-
-        locationLabel.innerHTML = `Select location`;
-        fileLabel.innerHTML = `No Files selected`
-
-        locationLabel.className = "alert alert-danger"
-        fileLabel.className = "alert alert-danger"
-
+        nofileSelected()
         baselineBtn.className = "btn btn-danger"
         return setTimeout(() => baselineBtn.className = "btn btn-primary", 2000)
     }
@@ -353,3 +383,4 @@ function basePlot(e) {
         console.log('Returned to javascript');
     });
 }
+/////////////////////////////////////////////////////////
