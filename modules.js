@@ -7,6 +7,7 @@ const mainWindow = remote.getCurrentWindow();
 exports.openfiles = async function(title, fileTypeName, fileExtensions) {
 
     console.log("[modules]: Sending files");
+    let send_obj;
     
     const options = {
         title: title,
@@ -19,7 +20,7 @@ exports.openfiles = async function(title, fileTypeName, fileExtensions) {
     
     await dialog.showOpenDialog(mainWindow, options).then(files => {
 
-        let send_obj = {
+        send_obj = {
             files: files.filePaths,
             location: path.dirname(files.filePaths[0])
         }
