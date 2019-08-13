@@ -109,6 +109,7 @@ function browser_update(location) {
 }
 
 function nofileSelected() {
+    nofile = true;
     locationLabel.innerHTML = `Select location`;
     fileLabel.innerHTML = `No Files selected`
     locationLabel.className = "alert alert-danger"
@@ -140,7 +141,11 @@ function openFile() {
         fileSelected(fileLocation, baseName) //Display selected file label with location
         browser_update(fileLocation) //Update the filename list content in selected file box
         writeFileToDisk(fileLocation, filePaths, baseName) //Write the filelocation and filename lists to local disk for future use.
-    }).catch(error => console.error("[Normline]: ", error))
+        
+    }).catch(error => {
+        console.error("[Normline]: ", error);
+        nofileSelected()
+    })
 }
 
 function selectFunc(e) {
