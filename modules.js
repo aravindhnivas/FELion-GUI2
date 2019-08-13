@@ -19,13 +19,13 @@ exports.openfiles = async function(title, fileTypeName, fileExtensions) {
     };
     
     await dialog.showOpenDialog(mainWindow, options).then(files => {
-
         send_obj = {
             files: files.filePaths,
             location: path.dirname(files.filePaths[0])
         }
 
     }).catch(error => {
+        console.log("[modules]: Error occured");
         return Promise.reject(new Error(error))
     })
 
