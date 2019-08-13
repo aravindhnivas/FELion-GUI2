@@ -140,7 +140,7 @@ function openFile() {
         fileSelected(fileLocation, baseName) //Display selected file label with location
         browser_update(fileLocation) //Update the filename list content in selected file box
         writeFileToDisk(fileLocation, filePaths, baseName) //Write the filelocation and filename lists to local disk for future use.
-    }).catch(error => console.log("[Normline]: ", error))
+    }).catch(error => console.error("[Normline]: ", error))
 }
 
 function selectFunc(e) {
