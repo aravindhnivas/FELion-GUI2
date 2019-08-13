@@ -7,6 +7,8 @@ const path = require('path')
 const spawn = require("child_process").spawn;
 const fs = require('fs')
 
+const {openfiles} = require('../modules');
+
 /////////////////////////////////////////////////////////
 const helpOn = () => {
     $('[data-toggle="tooltip"]').tooltip("enable");
@@ -55,20 +57,24 @@ let browser = document.querySelector("#browser")
 let locationLabel = document.querySelector("#locationLabel")
 let fileLabel = document.querySelector("#fileLabel")
 const save_path = path.join(remote.app.getPath('documents'), 'FELion_save_data.json')
+
 /////////////////////////////////////////////////////////
 
 function readfile() {
     fs.readFile(save_path, (err, data) => {
+
         if (err) {
+
             save_data = { location: "", filelists: [] };
             nofileSelected();
         } else {
+
             save_data = JSON.parse(data);
             fileLocation = save_data.location
             filePaths = save_data.filelists;
-            filePaths.forEach((x) => baseName.push(`${path.basename(x)}, `))
+            baseName = save_data.basename
 
-            fileSelected(filePaths, baseName)
+            fileSelected(fileLocation, baseName)
             browser_update(fileLocation)
             //normplot()
             console.log(`Read file: ${save_data}`);
@@ -76,10 +82,12 @@ function readfile() {
     })
 };
 
-function writeFileToDisk(location, files) {
+function writeFileToDisk(location, files, basename) {
     // Writing data information to local disk
     save_data.location = location
     save_data.filelists = files
+    save_data.basename = basename
+
     fs.writeFile(save_path, JSON.stringify(save_data), err => {
         if (err) throw err;
         console.log('Successfully wrote file');
@@ -116,39 +124,23 @@ function fileSelected(location, files) {
     fileLabel.className = "alert alert-info"
 }
 
-function openFile(e) {
-
-    const options = {
-        title: "Open Felix file(s)",
-        filters: [
-            { name: 'Felix files', extensions: ['felix', 'cfelix'] },
-            { name: 'All Files', extensions: ['*'] }
-        ],
-        properties: ['openFile', 'multiSelections'],
-    };
+function openFile() {
 
     // Clearing filename list in Select file box
-    while (browser.hasChildNodes()) {
-        browser.removeChild(browser.childNodes[0])
-    }
+    while (browser.hasChildNodes()) {browser.removeChild(browser.childNodes[0])}
 
-    // Opening file dialog
-    dialog.showOpenDialog(mainWindow, options).then(value => {
+    openfiles("Open Felix file(s)", "Felix files", ["felix", "cfelix"]).then(get_files => {
 
-        filePaths = value.filePaths;
+        filePaths = get_files.files;
+        fileLocation = get_files.location
+
         baseName = [];
-        filePaths.forEach((x) => baseName.push(`${path.basename(x)}, `))
-        fileLocation = path.dirname(filePaths[0])
-
+        filePaths.forEach(x => baseName.push(`${path.basename(x)}, `))
+        
         fileSelected(fileLocation, baseName) //Display selected file label with location
         browser_update(fileLocation) //Update the filename list content in selected file box
-        writeFileToDisk(fileLocation, filePaths) //Write the filelocation and filename lists to local disk for future use.
-
-    }).catch((error) => {
-        console.error(`File open error: ${error}`)
-        nofile = true;
-        nofileSelected() //Display no file selected label with danger sign
-    })
+        writeFileToDisk(fileLocation, filePaths, baseName) //Write the filelocation and filename lists to local disk for future use.
+    }).catch(error => console.log("[Normline]: ", error))
 }
 
 function selectFunc(e) {
