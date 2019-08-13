@@ -10,6 +10,7 @@ exports.openfiles = async function(title, fileTypeName, fileExtensions) {
     let send_obj;
     
     const options = {
+        
         title: title,
         filters: [
             { name: fileTypeName, extensions: fileExtensions },
