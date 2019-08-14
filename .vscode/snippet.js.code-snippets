@@ -1,0 +1,35 @@
+{
+	"Print to console": {
+		"scope": "javascript,typescript",
+		"prefix": "cl",
+		"body": ["console.log('$1');", "$2"],
+		"description": "Log output to console"
+	},
+
+	"Normal function": {
+		"prefix": "nfn",
+		"body": ["function ${1:functionName} ($2) {", "  $3", "}"],
+		"description": "Normal function"
+
+	},
+
+	"Arrow function": {
+		"prefix": "arw",
+		"body": [
+		  "(${1:Name}) => {",
+		  "  $2",
+		  "}"
+		],
+		"description": "Arrow function"
+	  },
+
+	  "Arrow function": {
+		"prefix": "arwfn",
+		"body": [
+		  "const $1 = ($2) => {",
+		  "  $3",
+		  "}"
+		],
+		"description": "Arrow function"
+	  }
+}
