@@ -25,14 +25,14 @@ exports.openfiles = function(title, fileTypeName, fileExtensions) {
             send_obj = {
                 files: files.filePaths,
                 location: path.dirname(files.filePaths[0])
-            }
+            };
             console.log("[modules]: File sent succesfully", send_obj);
             resolve(send_obj);
 
         }).catch(error => {
             console.log("[modules]: Error occured");
             reject(new Error(error));
-            
+
         })
     })
 }
