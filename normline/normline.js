@@ -400,7 +400,6 @@ function normplot() {
         }
     });
 }
-
 /////////////////////////////////////////////////////////
 
 let baselineBtn = document.querySelector("#baseline-btn")
