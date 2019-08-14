@@ -1,13 +1,11 @@
 'use strict'
 //Importing required modules
 const { remote } = require('electron');
-const dialog = remote.dialog;
-const mainWindow = remote.getCurrentWindow();
 const path = require('path')
 const spawn = require("child_process").spawn;
 const fs = require('fs')
 
-const {openfiles} = require('../modules');
+const { openfiles } = require('../modules');
 
 /////////////////////////////////////////////////////////
 const helpOn = () => {
@@ -19,6 +17,7 @@ const helpOff = () => {
     $('[data-toggle="tooltip"]').tooltip("hide");
     $('[data-toggle="tooltip"]').tooltip("disable");
 }
+
 /////////////////////////////////////////////////////////
 
 $(document).ready(function () {
@@ -28,24 +27,22 @@ $(document).ready(function () {
     $("#baseline-btn").click(basePlot);
     $('#browser').click(selectFunc);
 
-    //helpOn()
-    //setTimeout(helpOff, 5000)
-
-    // Info  display toggle
-    $("#help").bootstrapToggle({
-        on: 'Help',
-        off: 'Help'
-    });
-
     $('#help').change(function () {
         let info = $(this).prop('checked')
+        console.log("Help: ", info)
         if (info) { helpOn() } else { helpOff() }
     });
-    readfile() //Read last used felix file from local storage
-    //END
+
+    // Read Filename and location details from local disk
+    readfile();
+})
+
+$(document).on('click', 'input.fileCheck', () => {
+    console.log("File Checked:", $(this))
 })
 
 /////////////////////////////////////////////////////////
+
 let filePaths;
 let nofile = true;
 let filevalue;
@@ -57,10 +54,12 @@ let browser = document.querySelector("#browser")
 let locationLabel = document.querySelector("#locationLabel")
 let fileLabel = document.querySelector("#fileLabel")
 const save_path = path.join(remote.app.getPath('documents'), 'FELion_save_data.json')
+let filebrowser = document.querySelector("#filebrowser")
 
 /////////////////////////////////////////////////////////
 
 function readfile() {
+
     fs.readFile(save_path, (err, data) => {
 
         if (err) {
@@ -77,35 +76,46 @@ function readfile() {
             fileSelected(fileLocation, baseName)
             browser_update(fileLocation)
             //normplot()
-            console.log(`Read file: ${save_data}`);
+            console.log('Read file', save_data);
         }
     })
 };
 
-function writeFileToDisk(location, files, basename) {
+function writeFileToDisk(location, files, base) {
     // Writing data information to local disk
     save_data.location = location
     save_data.filelists = files
-    save_data.basename = basename
+    save_data.basename = base
+
+    console.log('Writing file', save_data)
 
     fs.writeFile(save_path, JSON.stringify(save_data), err => {
         if (err) throw err;
-        console.log('Successfully wrote file');
+        console.log('Successfully wrote file', save_data);
     })
+
 }
 
 function browser_update(location) {
+    fs.readdirSync(location).forEach((felixfile) => {
 
-    // Adding avaiable files to the display list
-    fs.readdirSync(location).forEach((x) => {
+        if (felixfile.endsWith(".felix") || felixfile.endsWith(".cfelix")) {
 
-        if (x.endsWith(".felix") || x.endsWith(".cfelix")) {
+            //Select Filebrowser
             filevalue = document.createElement("option")
-            filevalue.innerHTML = x
+            filevalue.innerHTML = felixfile
             browser.add(filevalue)
+
+            //File Browser (NEW)
+            /**$('#filebrowser').append(
+                `<div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="fileCheck custom-control-input" id=${felixfile}>
+                    <label class="custom-control-label" for="${felixfile}" style="color: black">${felixfile}</label>
+                </div>`
+            ) */
+
         }
     })
-
 }
 
 function nofileSelected() {
@@ -128,7 +138,8 @@ function fileSelected(location, files) {
 function openFile() {
 
     // Clearing filename list in Select file box
-    while (browser.hasChildNodes()) {browser.removeChild(browser.childNodes[0])}
+    while (browser.hasChildNodes()) { browser.removeChild(browser.childNodes[0]) }
+    while (filebrowser.hasChildNodes()) { filebrowser.removeChild(filebrowser.childNodes[0]) }
 
     openfiles("Open Felix file(s)", "Felix files", ["felix", "cfelix"]).then(get_files => {
 
@@ -137,25 +148,30 @@ function openFile() {
 
         baseName = [];
         filePaths.forEach(x => baseName.push(`${path.basename(x)}, `))
-        
-        fileSelected(fileLocation, baseName) //Display selected file label with location
-        browser_update(fileLocation) //Update the filename list content in selected file box
-        writeFileToDisk(fileLocation, filePaths, baseName) //Write the filelocation and filename lists to local disk for future use.
-        
+
+        fileSelected(fileLocation, baseName)
+        browser_update(fileLocation)
+        writeFileToDisk(fileLocation, filePaths, baseName)
+
     }).catch(error => {
         console.error("[Normline]: ", error);
         nofileSelected()
     })
 }
 
+
 function selectFunc(e) {
 
     console.log(browser.value)
     filePaths = []
     filePaths.push(path.join(fileLocation, browser.value))
+
+    baseName = [];
+    filePaths.forEach(x => baseName.push(`${path.basename(x)}, `))
     fileLabel.innerHTML = browser.value
+
     normplot()
-    writeFileToDisk(fileLocation, filePaths)
+    writeFileToDisk(fileLocation, filePaths, baseName)
 }
 /////////////////////////////////////////////////////////
 let dataFromPython_norm;
@@ -167,9 +183,9 @@ let error_occured = false
 const pythonPath = path.join(__dirname, "..", "python3.7", "python");
 /////////////////////////////////////////////////////////
 
-function plot(mainTitle, xtitle, ytitle, data, plotArea, subplot=false, subplot_obj=null) {
+function plot(mainTitle, xtitle, ytitle, data, plotArea, subplot = false, subplot_obj = null) {
 
-    if(!subplot){
+    if (!subplot) {
 
         let dataLayout = {
             title: mainTitle,
@@ -180,9 +196,9 @@ function plot(mainTitle, xtitle, ytitle, data, plotArea, subplot=false, subplot_
                 title: ytitle
             },
         };
-    
+
         let dataPlot = []
-    
+
         for (let x in data) {
             dataPlot.push(data[x])
         }
@@ -224,13 +240,14 @@ function plot(mainTitle, xtitle, ytitle, data, plotArea, subplot=false, subplot_
 
         Plotly.newPlot(plotArea, dataPlot1.concat(dataPlot2), dataLayout);
     }
-    
+
 }
 /////////////////////////////////////////////////////////
 
-function normplot(e) {
+function normplot() {
 
     if (nofile) {
+
         nofileSelected()
         normlineBtn.className = "btn btn-danger"
         return setTimeout(() => normlineBtn.className = "btn btn-primary", 2000)
@@ -243,8 +260,8 @@ function normplot(e) {
 
     py.stdout.on('data', (data) => {
 
-        loading_parent.style.visibility = "visible"
-        loading.innerText = "Loading"
+        loading_parent.style.visibility = "visible";
+        loading.innerText = "Loading";
 
         try {
 
@@ -325,7 +342,7 @@ function basePlot(e) {
         baselineBtn.className = "btn btn-danger"
         return setTimeout(() => baselineBtn.className = "btn btn-primary", 2000)
     }
-    
+
     const py = spawn(pythonPath, [path.join(__dirname, "./baseline.py"), [filePaths]]);
 
     py.stdout.on('data', (data) => {

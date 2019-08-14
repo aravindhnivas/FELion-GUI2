@@ -55,7 +55,7 @@
                 <!--Help Toogles-->
                 <li class="nav-item">
                     <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" id="help"
-                        value="Help">
+                        data-on="Help" data-off="Help">
                 </li>
 
             </ul>
@@ -141,16 +141,17 @@
                         <hr>
 
                         <!--File Explorer Contents-->
-                        <button type="button" class="btn btn-link" id="goBackFolder"><img src="../icons/goBack.svg"></button>
+                        <button type="button" class="btn btn-link" id="goBackFolder"><img
+                                src="../icons/goBack.svg"></button>
                         <div class="form-group">
-                            <select multiple class="form-control" id="browser" data-toggle="tooltip" data-placement="right"
-                                title="Files from the selected location"></select>
+                            <select multiple class="form-control" id="browser" data-toggle="tooltip"
+                                data-placement="right" title="Files from the selected location"></select>
                         </div>
 
-                        <div class="div" id="filebrowser"></div>
+                        <div class="container" id="filebrowser"></div>
 
-                        </div>
                     </div>
+                </div>
                 <!--File Explorer ENDS-->
 
                 <!--Plotting Area BEGINS-->
@@ -183,7 +184,7 @@
         </div>
         <!--File Explorer and Plotting Area ENDS-->
 
-        
+
         <!--/////////////////////////////////////////////////////////////////////////-->
 
     </div>
