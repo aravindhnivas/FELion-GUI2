@@ -33,6 +33,6 @@ exports.openfiles = function(title, fileTypeName, fileExtensions) {
             console.log("[modules]: Error occured");
             reject(new Error(error));
 
-        })
-    })
-}
+        });
+    });
+};
