@@ -8,6 +8,26 @@ const { openfiles, folder_tree_update, fileSelectedLabel, nofileSelectedLabel, r
 
 /////////////////////////////////////Initialising BEGIN/////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//Variables defined
+let filePaths;
+let fileLocation;
+let baseName = [];
+let fileChecked = [];
+
+//Display label ID's
+const $folderID = $("#filebrowser")
+const $locationLabelID = $("#locationLabel")
+const $fileLabelID = $("#fileLabel")
+
+//DOM handler variables
+let normlineBtn = document.querySelector("#normlinePlot-btn");
+let loading = document.querySelector("#loading");
+let loading_parent = document.querySelector("#loading-parent");
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
 //Functions
 const helpOn = () => {
     $('[data-toggle="tooltip"]').tooltip("enable");
@@ -44,35 +64,20 @@ $(document).ready(function () {
         .catch(err => {
 
             filePaths = []
-            fileLocation = ''
+            fileLocation = remote.app.getPath("home");
             baseName = []
-            nofileSelectedLabel(fileLabelID)
 
+            nofileSelectedLabel($fileLabelID)
+
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+            folder_tree_update(fileLocation, $folderID);
             console.log(err);
         })
 });
 /////////////////////////////////////Initialising END/////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////////////////
 
-//Variables defined
-let filePaths;
-let fileLocation;
-let baseName = [];
-let fileChecked = [];
-
-//Display label ID's
-const $folderID = $("#filebrowser")
-const $locationLabelID = $("#locationLabel")
-const $fileLabelID = $("#fileLabel")
-
-//DOM handler variables
-let normlineBtn = document.querySelector("#normlinePlot-btn");
-let loading = document.querySelector("#loading");
-let loading_parent = document.querySelector("#loading-parent");
-
-///////////////////////////////////////////////////////////////////////////////////////////
 
 const loadingDisplay = () => {
     return new Promise(resolve => {

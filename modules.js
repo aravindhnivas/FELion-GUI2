@@ -141,7 +141,7 @@ function nofileSelectedLabel(fileLabelID) {
 
 
 //saving details to local directory
-const save_path = path.join(remote.app.getPath("home"), "FELion_save_data.json");
+const save_path = path.resolve(".", ".FELion_save_data.json");
 
 ///////////////////////////////////
 
