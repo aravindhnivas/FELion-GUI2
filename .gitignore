@@ -7,3 +7,4 @@ _test_datas/
 *.dat
 *.png
 *.rar
+.FELion_save_data.json
