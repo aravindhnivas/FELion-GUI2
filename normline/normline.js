@@ -26,18 +26,7 @@ $(document).ready(function () {
     $("#help").change(function () { $(this).prop("checked") ? helpOn() : helpOff() });
     $("#restart-btn").click(() => location.reload())
 
-    $("#goBackFolder").click(function () {
-        fileLocation = path.resolve(path.join(fileLocation, "../"));
 
-        //Updating the folder tree for the new location
-        folder_tree_update(fileLocation, $folderID);
-
-        //Updating the display for location and file label
-        fileChecked = [];
-        filePaths = [];
-        baseName = [];
-        fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
-    });
 
     //Reading file from local disk
     readfile($locationLabelID, $fileLabelID, $folderID)
@@ -83,6 +72,8 @@ let normlineBtn = document.querySelector("#normlinePlot-btn");
 let loading = document.querySelector("#loading");
 let loading_parent = document.querySelector("#loading-parent");
 
+///////////////////////////////////////////////////////////////////////////////////////////
+
 const loadingDisplay = () => {
     return new Promise(resolve => {
         loading_parent.style.visibility = "visible";
@@ -91,6 +82,8 @@ const loadingDisplay = () => {
         resolve("Done");
     });
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////
 
 //Function for Opening file
 function openFile() {
@@ -102,6 +95,8 @@ function openFile() {
 
             //Grabing the basename of the files to display it.
             baseName = filePaths.map(file => `${path.basename(file)}, `);
+
+            fileChecked = [] //Making sure it only plots the filePaths
 
             //Displaying the location and label
             fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
@@ -127,67 +122,95 @@ function openFile() {
         });
 }
 
-///////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
 //Handling event when a file is selected from the folder_tree to plot
+
 //Saving the selected file list first
 $folderID.on("click", ".filecheck", event => {
+
+    filePaths = []//Making sure it only plots the fileChecked
+
     if (event.target.checked) {
-        //If file has checked value then append the file to fileChecked array
+
+        console.log('[FileChecked]: Adding files', event.target.value);
         fileChecked.push(event.target.value);
+        console.log('[FileChecked]: current files: ', fileChecked);
+
     } else {
+
         //Else remove the file from the fileChecked array
         for (let fileIndex = 0; fileIndex < fileChecked.length; fileIndex++) {
+
             if (fileChecked[fileIndex] == event.target.value) {
-                console.log('Removing file: ', fileChecked[fileIndex]);
-                fileChecked.splice(fileIndex, 1)
+
+                console.log('[FileChecked]: Removing file', fileChecked[fileIndex]);
+                fileChecked.splice(fileIndex, 1);
+                console.log('[FileChecked]: current files: ', fileChecked);
             };
         }
     }
 
-    baseName = fileChecked.map(file => `${path.basename(file)}, `);
+    baseName = fileChecked.map(felixfile => `${felixfile}, `);
     fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
 
-    console.log("Selected files: ", fileChecked);
+    console.log("Filechecked selected files: ", fileChecked);
 });
 
-//Handling event when a folder is clicked
-$folderID.on("click", ".folders", event => {
-    let folderName = event.target.value;
-    console.log("Folder clicked: ", folderName);
+///////////////////////////////////////////////////////////////////////////////////////////
 
-    fileLocation = path.join(fileLocation, folderName);
+//Handling event when a folder or back button is pressed
 
-    //Updating the folder tree for the new location
-    folder_tree_update(fileLocation, $folderID);
+//Refershing the folder_tree to new location and refreshing the variables
+function refresh_folder_tree_forNewLocation(fileLocation, locationLabelID, fileLabelID, folderID) {
 
     //Updating the display for location and file label
     fileChecked = [];
     filePaths = [];
     baseName = [];
-    fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+    fileSelectedLabel(fileLocation, baseName, locationLabelID, fileLabelID);
+
+    console.log("[UPDATE]: Location change\nFileChecked: ", fileChecked, "filePaths: ", filePaths, "baseName: ", baseName);
+    //Updating the folder tree for the new location
+    folder_tree_update(fileLocation, folderID);
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//Handling event when a folder is clicked
+$folderID.on("click", ".folders", event => {
+
+    let folderName = event.target.value;
+    console.log("Folder clicked: ", folderName);
+
+    fileLocation = path.join(fileLocation, folderName);
+    refresh_folder_tree_forNewLocation(fileLocation, $locationLabelID, $fileLabelID, $folderID)
+
 });
 
-///////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//Handling event when back button is pressed
+$("#goBackFolder").click(function () {
+    fileLocation = path.resolve(path.join(fileLocation, "../"));
+    refresh_folder_tree_forNewLocation(fileLocation, $locationLabelID, $fileLabelID, $folderID)
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////
 
 function runPlot() {
     return new Promise((resolve, reject) => {
+
         if (!fileChecked.length == 0) {
-            //console.log('Files present');
 
-            filePaths = [];
-            fileChecked.forEach(felixfile => {
-                felixfile = path.join(fileLocation, felixfile);
-                filePaths.push(felixfile);
-            });
-
-            baseName = [];
-            filePaths.forEach(x => baseName.push(`${path.basename(x)}, `));
+            filePaths = fileChecked.map(felixfile => path.join(fileLocation, felixfile))
 
             fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
             writeFileToDisk(fileLocation, filePaths, baseName);
             resolve("completed");
-        } else if (!filePaths.length == 0) { resolve("completed") } else { reject(new Error("No File selected")) }
+
+        } else { reject(new Error("No File selected")) }
     });
 }
 
@@ -215,7 +238,7 @@ $(document).on("click", "#baseline-btn", () => {
         });
 });
 
-/////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
 let dataFromPython_norm;
 let footer = document.querySelector("#footer");
