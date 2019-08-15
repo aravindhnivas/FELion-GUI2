@@ -309,12 +309,7 @@ function plot(mainTitle, xtitle, ytitle, data, plotArea, subplot = false, subplo
 function normplot(felixfiles) {
     const py = spawn(pythonPath, [path.join(__dirname, "./normline.py"), [felixfiles, delta.value]]);
 
-    //loading_parent.className = "alert alert-primary";
-    //loading.innerText = "Loading";
-
     py.stdout.on("data", data => {
-        //loading_parent.style.visibility = "visible";
-        //loading.innerText = "Loading";
 
         try {
             console.log("Receiving data");
