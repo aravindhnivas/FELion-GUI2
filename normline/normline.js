@@ -144,6 +144,8 @@ function openFile() {
 //Function to display location and label
 function fileSelectedLabel(location, files) {
 
+    files.length == 0 ? filePaths = [] : ""
+
     $("#locationLabel")
         .attr("class", "alert alert-info")
         .html(`Location: ${location}`);
@@ -248,12 +250,14 @@ $("#filebrowser").on("click", ".filecheck", event => {
     } else {
         //Else remove the file from the fileChecked array
         for (let fileIndex = 0; fileIndex < fileChecked.length; fileIndex++) {
-            if (fileChecked[fileIndex] == event.target.value) fileChecked.splice(fileIndex, 1);
+            if (fileChecked[fileIndex] == event.target.value) {
+                console.log('Removing file: ', fileChecked[fileIndex]);
+                fileChecked.splice(fileIndex, 1)
+            };
         }
     }
 
-    baseName = [];
-    fileChecked.forEach(x => baseName.push(`${path.basename(x)}, `));
+    baseName = fileChecked.map(file => `${path.basename(file)}, `);
     fileSelectedLabel(fileLocation, baseName);
 
     console.log("Selected files: ", fileChecked);
@@ -295,9 +299,7 @@ function runPlot() {
             fileSelectedLabel(fileLocation, baseName);
             writeFileToDisk(fileLocation, filePaths, baseName);
             resolve("completed");
-        } 
-        else if (!filePaths.length == 0) {resolve("completed")}
-        else {reject(new Error("No File selected"))}
+        } else if (!filePaths.length == 0) { resolve("completed") } else { reject(new Error("No File selected")) }
     });
 }
 
