@@ -23,15 +23,8 @@ const helpOff = () => {
 $(document).ready(function () {
     $("#normline-open-btn").click(openFile);
 
-    $("#help").change(function () {
-        let info = $(this).prop("checked");
-        console.log("Help: ", info);
-        if (info) {
-            helpOn();
-        } else {
-            helpOff();
-        }
-    });
+    $("#help").change(function () { $(this).prop("checked") ? helpOn() : helpOff() });
+    $("#restart-btn").click(() => location.reload())
 
     $("#goBackFolder").click(function () {
         fileLocation = path.resolve(path.join(fileLocation, "../"));

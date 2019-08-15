@@ -76,7 +76,10 @@
             <!--Open Button-->
             <div class="col">
                 <button type="button" class="btn btn-secondary" id="normline-open-btn" data-toggle="tooltip"
-                    data-placement="right" title="To open multiple files">Open File(s)</button>
+                    data-placement="top" title="To open multiple files">Open File(s)</button>
+
+                <button type="button" class="btn btn-warning" id="restart-btn" data-toggle="tooltip"
+                    data-placement="right" title="To start this page">Restart</button>
             </div>
 
         </div>
@@ -143,7 +146,9 @@
                         <!--File Explorer Contents-->
                         <button type="button" class="btn btn-link" id="goBackFolder"><img
                                 src="../icons/goBack.svg"></button>
-                        <div id="filebrowser"></div>
+                        <div id="filebrowser" data-toggle="tooltip" data-placement="right"
+                            title="Select file(s) to plot">
+                        </div>
 
                     </div>
                 </div>
