@@ -4,7 +4,7 @@ const { remote } = require("electron");
 const path = require("path");
 const spawn = require("child_process").spawn;
 const fs = require("fs");
-const { openfiles, folder_tree_update, fileSelectedLabel, nofileSelectedLabel, readfile, writeFileToDisk } = require("../modules");
+const { openfiles, folder_tree_update, fileSelectedLabel, nofileSelectedLabel, readfile, save_path, save_data } = require("../modules");
 
 /////////////////////////////////////Initialising BEGIN/////////////////////////////////////
 
@@ -52,12 +52,12 @@ $(document).ready(function () {
     readfile($locationLabelID, $fileLabelID, $folderID)
         .then(received_data => {
 
-            filePaths = received_data.felixfiles;
-            fileLocation = received_data.location;
-            baseName = received_data.basenames;
-            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
-            folder_tree_update(fileLocation, $folderID);
+            filePaths = received_data.felix.files;
+            fileLocation = received_data.felix.location;
+            baseName = received_data.felix.basenames;
 
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+            folder_tree_update(fileLocation, $folderID, [".felix", ".cfelix"]);
             console.log("[UPDATE]: File read from local disk", received_data);
 
         })
@@ -70,7 +70,7 @@ $(document).ready(function () {
             nofileSelectedLabel($fileLabelID)
 
             fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
-            folder_tree_update(fileLocation, $folderID);
+            folder_tree_update(fileLocation, $folderID, [".felix", ".cfelix"]);
             console.log(err);
         })
 });
@@ -107,7 +107,7 @@ function openFile() {
             fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
 
             //Updating the folder_tree
-            folder_tree_update(fileLocation, $folderID);
+            folder_tree_update(fileLocation, $folderID, [".felix", ".cfelix"]);
 
             //Writing the last used location and filename to local disk
             writeFileToDisk(fileLocation, filePaths, baseName);
@@ -126,6 +126,30 @@ function openFile() {
             nofileSelectedLabel($fileLabelID);
         });
 }
+
+//Function to writing the location and filenames last used to a local disk HOME directory
+function writeFileToDisk(location, files, basenames) {
+    save_data = {
+
+        felix: {
+            location: location,
+            files: files,
+            basenames: basenames
+        },
+
+        mass: save_data.mass
+
+    }
+    console.log("Writing file", save_data);
+
+    //Writing file to local disk
+    fs.writeFileSync(save_path, JSON.stringify(save_data), err => {
+        console.log("[UPDATE]: Successfully file information written to local disk", save_data);
+        if (err) throw err;
+    });
+}
+
+///////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -177,7 +201,7 @@ function refresh_folder_tree_forNewLocation(fileLocation, locationLabelID, fileL
 
     console.log("[UPDATE]: Location change\nFileChecked: ", fileChecked, "filePaths: ", filePaths, "baseName: ", baseName);
     //Updating the folder tree for the new location
-    folder_tree_update(fileLocation, folderID);
+    folder_tree_update(fileLocation, folderID, [".felix", ".cfelix"]);
 
 }
 

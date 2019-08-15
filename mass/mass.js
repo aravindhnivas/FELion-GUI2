@@ -1,130 +1,321 @@
+"use strict";
+
 //Importing required modules
-const { remote } = require('electron');
-const dialog = remote.dialog;
-const mainWindow = remote.getCurrentWindow();
-const path = require('path')
+const { remote } = require("electron");
+const path = require("path");
 const spawn = require("child_process").spawn;
+const fs = require("fs");
+const { openfiles, folder_tree_update, fileSelectedLabel, nofileSelectedLabel, readfile, save_path } = require("../modules");
+
+/////////////////////////////////////Initialising BEGIN/////////////////////////////////////
+
+//Variables defined
+
+let filePaths;
+let fileLocation;
+
+let baseName = [];
+let fileChecked = [];
+
+//Display label ID's
+const $folderID = $("#filebrowser")
+const $locationLabelID = $("#locationLabel")
+const $fileLabelID = $("#fileLabel")
+
+//DOM handler variables
+let massBtn = document.querySelector("#massPlot-btn");
+let loading = document.querySelector("#loading");
+let loading_parent = document.querySelector("#loading-parent");
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//Functions
+const helpOn = () => {
+    $('[data-toggle="tooltip"]').tooltip("enable");
+    $('[data-toggle="tooltip"]').tooltip("show");
+};
+
+const helpOff = () => {
+    $('[data-toggle="tooltip"]').tooltip("hide");
+    $('[data-toggle="tooltip"]').tooltip("disable");
+};
+
+//Document Ready
+$(document).ready(function () {
+    $("#normline-open-btn").click(openFile);
+
+    $("#help").change(function () { $(this).prop("checked") ? helpOn() : helpOff() });
+    $("#restart-btn").click(() => location.reload())
 
 
-/////////////////////////////////////////////////////////
-$(document).ready(function() {
-    $("#mass-open-btn").click(openFile);
-    $("#massplot-btn").click(masspec);
 
-    // Info  display toggle
-    $("#help").bootstrapToggle({
-        on: 'Help',
-        off: 'Help'
+    //Reading file from local disk
+    readfile($locationLabelID, $fileLabelID, $folderID)
+        .then(received_data => {
+
+            let readfileContent = received_data;
+
+            filePaths = received_data.mass.files;
+            fileLocation = received_data.mass.location;
+            baseName = received_data.mass.basenames;
+
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+            folder_tree_update(fileLocation, $folderID, [".mass"]);
+
+            console.log("[UPDATE]: File read from local disk", received_data);
+
+        })
+        .catch(err => {
+
+            filePaths = []
+            fileLocation = remote.app.getPath("home");
+            baseName = []
+
+            nofileSelectedLabel($fileLabelID)
+
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+            folder_tree_update(fileLocation, $folderID, [".mass"]);
+            console.log(err);
+        })
+});
+/////////////////////////////////////Initialising END/////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+const loadingDisplay = () => {
+    return new Promise(resolve => {
+        loading_parent.style.visibility = "visible";
+        loading_parent.className = "alert alert-warning";
+        loading.innerText = "Please wait...";
+        resolve("Done");
     });
+};
 
-    $('#help').change(function() {
-        let info = $(this).prop('checked')
-        console.log(`Status: ${info}\nType: ${typeof info}`)
-        info_status(info)
-    });
+///////////////////////////////////////////////////////////////////////////////////////////
 
+//Function for Opening file
+function openFile() {
+    openfiles("Open Mass spectrum file(s)", "Mass files", ["mass"])
+        .then(get_files => {
+            //Setting filename with fullpath and grabbing its location from it
+            filePaths = get_files.files;
+            fileLocation = get_files.location;
 
-    //END
-})
+            //Grabing the basename of the files to display it.
+            baseName = filePaths.map(file => `${path.basename(file)}, `);
 
-function info_status(info) {
-    if (info) {
-        $(() => $('[data-toggle="tooltip"]').tooltip("enable"))
-        $(() => $('[data-toggle="tooltip"]').tooltip("show"))
-    } else {
-        $(() => $('[data-toggle="tooltip"]').tooltip("hide"))
-        $(() => $('[data-toggle="tooltip"]').tooltip("disable"))
-    }
+            fileChecked = [] //Making sure it only plots the filePaths
+
+            //Displaying the location and label
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+
+            //Updating the folder_tree
+            folder_tree_update(fileLocation, $folderID, [".mass"]);
+
+            //Writing the last used location and filename to local disk
+            writeFileToDisk(fileLocation, filePaths, baseName);
+
+            //Loading please wait display
+            loadingDisplay();
+
+            //Plotting Spectrum
+            masspec(filePaths);
+        })
+        .catch(error => {
+            //Catching Error in console log
+            console.error("[MassSpec]: ", error);
+
+            //Displaying NO file is available
+            nofileSelectedLabel($fileLabelID);
+        });
 }
 
-/////////////////////////////////////////////////////////
+///////////////////////////////////
 
-//Showing opened file label
-let filePaths;
-let label = document.querySelector("#label")
-let nofile;
+//Function to writing the location and filenames last used to a local disk HOME directory
 
-function openFile(e) {
 
-    const options = {
-        title: "Open .mass file(s)",
-        defaultPath: "D:",
-        filters: [
-            { name: 'Mass files', extensions: ['mass'] },
-            { name: 'All Files', extensions: ['*'] }
-        ],
-        properties: ['openFile', 'multiSelections'],
+function writeFileToDisk(location, files, basenames) {
+
+    let mass = {
+        location: location,
+        files: files,
+        baseName: basenames
     };
 
-    fileOpen = dialog.showOpenDialog(mainWindow, options);
-    fileOpen.then(value => {
+    let data = { readfile.readfileContent, mass }
 
-        nofile = false;
+    console.log("Writing file", data);
 
-        filePaths = value.filePaths;
-        baseName = [];
-        for (x in filePaths) {
-            baseName.push(`| ${path.basename(filePaths[x])}`)
+    //Writing file to local disk
+    fs.writeFileSync(save_path, JSON.stringify(data), err => {
+        console.log("[UPDATE]: Successfully file information written to local disk", data);
+        if (err) throw err;
+    });
+}
+
+///////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//Handling event when a file is selected from the folder_tree to plot
+
+//Saving the selected file list first
+$folderID.on("click", ".filecheck", event => {
+
+    filePaths = []//Making sure it only plots the fileChecked
+
+    if (event.target.checked) {
+
+        console.log('[FileChecked]: Adding files', event.target.value);
+        fileChecked.push(event.target.value);
+        console.log('[FileChecked]: current files: ', fileChecked);
+
+    } else {
+
+        //Else remove the file from the fileChecked array
+        for (let fileIndex = 0; fileIndex < fileChecked.length; fileIndex++) {
+
+            if (fileChecked[fileIndex] == event.target.value) {
+
+                console.log('[FileChecked]: Removing file', fileChecked[fileIndex]);
+                fileChecked.splice(fileIndex, 1);
+                console.log('[FileChecked]: current files: ', fileChecked);
+            };
         }
-        fileLocation = path.dirname(filePaths[0])
-        label.textContent = `${fileLocation} ${baseName}`;
-        label.className = "alert alert-success"
+    }
 
-    }).catch((error) => {
-        console.log(`File open error: ${error}`)
-        nofile = true;
-        label.textContent = "No files selected "
-        label.className = "alert alert-danger"
-    })
+    baseName = fileChecked.map(felixfile => `${felixfile}, `);
+    fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+
+    console.log("Filechecked selected files: ", fileChecked);
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//Handling event when a folder or back button is pressed
+
+//Refershing the folder_tree to new location and refreshing the variables
+function refresh_folder_tree_forNewLocation(fileLocation, locationLabelID, fileLabelID, folderID) {
+
+    //Updating the display for location and file label
+    fileChecked = [];
+    filePaths = [];
+    baseName = [];
+    fileSelectedLabel(fileLocation, baseName, locationLabelID, fileLabelID);
+
+    console.log("[UPDATE]: Location change\nFileChecked: ", fileChecked, "filePaths: ", filePaths, "baseName: ", baseName);
+    //Updating the folder tree for the new location
+    folder_tree_update(fileLocation, folderID, [".mass"]);
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//Handling event when a folder is clicked
+$folderID.on("click", ".folders", event => {
+
+    let folderName = event.target.value;
+    console.log("Folder clicked: ", folderName);
+
+    fileLocation = path.join(fileLocation, folderName);
+    refresh_folder_tree_forNewLocation(fileLocation, $locationLabelID, $fileLabelID, $folderID)
+
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//Handling event when back button is pressed
+$("#goBackFolder").click(function () {
+    fileLocation = path.resolve(path.join(fileLocation, "../"));
+    refresh_folder_tree_forNewLocation(fileLocation, $locationLabelID, $fileLabelID, $folderID)
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+function runPlot() {
+    return new Promise((resolve, reject) => {
+
+        if (!fileChecked.length == 0) {
+
+            filePaths = fileChecked.map(felixfile => path.join(fileLocation, felixfile))
+
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+            writeFileToDisk(fileLocation, filePaths, baseName);
+            resolve("completed");
+
+        } else { reject(new Error("No File selected")) }
+    });
+}
+
+$(document).on("click", "#massPlot-btn", () => {
+    runPlot()
+        .then(() => {
+            loadingDisplay().then(masspec(filePaths));
+        })
+        .catch(err => {
+            console.log("Error occured: ", err);
+            nofileSelectedLabel($fileLabelID);
+            massBtn.className = "btn btn-danger";
+            setTimeout(() => (massBtn.className = "btn btn-primary"), 2000);
+        });
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+let footer = document.querySelector("#footer");
+
+let error_occured = false;
+const pythonPath = path.join(__dirname, "..", "python3.7", "python");
+
+function plot(mainTitle, xtitle, ytitle, data, plotArea) {
+
+    let dataLayout = {
+        title: mainTitle,
+        xaxis: {
+            title: xtitle
+        },
+        yaxis: {
+            title: ytitle,
+            type: "log"
+        }
+    };
+
+    let dataPlot = [];
+
+    for (let x in data) {
+        dataPlot.push(data[x]);
+    }
+    Plotly.newPlot(plotArea, dataPlot, dataLayout);
 }
 /////////////////////////////////////////////////////////
-//python backend
+
+/////////////////////////////////////////////////////////
 
 let dataFromPython;
-let massplotBtn = document.querySelector("#massplot-btn")
 
-function masspec(e) {
+function masspec(massfiles) {
 
     console.log("I am in javascript now!!")
     console.log(`File: ${filePaths}; ${typeof filePaths}`)
 
-    if (nofile) {
-
-        label.textContent = "No files selected "
-        label.className = "alert alert-danger"
-        massplotBtn.className = "btn btn-danger"
-        return setTimeout(() => massplotBtn.className = "btn btn-primary", 2000)
-    }
-
-    const py = spawn(path.join(__dirname, "..", "python3.7", "python"), [path.join(__dirname, "./mass.py"), filePaths]);
+    const py = spawn(pythonPath, [path.join(__dirname, "./mass.py"), massfiles]);
 
     py.stdout.on('data', (data) => {
 
         try {
 
             dataFromPython = data.toString('utf8')
-                //console.log("Before JSON parse :" + dataFromPython)
+            //console.log("Before JSON parse :" + dataFromPython)
             dataFromPython = JSON.parse(dataFromPython)
             console.log("After JSON parse :" + dataFromPython)
 
-            let layout = {
-                title: 'Mass spectrum',
-                xaxis: {
-                    title: 'Mass [u]'
-                },
-                yaxis: {
-                    title: 'Counts',
-                    type: "log"
-                }
-            };
-
-            let dataPlot = [];
-            for (x in dataFromPython) {
-                dataPlot.push(dataFromPython[x])
-            }
-
-            console.log(dataPlot)
-            Plotly.newPlot('plot', dataPlot, layout);
+            plot(
+                "Mass spectrum",
+                "Mass [u]",
+                "Counts",
+                dataFromPython,
+                "plot"
+            );
 
         } catch (err) {
             console.error("Error Occured in javascript code: " + err.message)
@@ -132,12 +323,26 @@ function masspec(e) {
 
     });
 
-    py.stderr.on('data', (data) => {
-        console.error(`Error from python: ${data}`)
-    })
+    py.stderr.on("data", data => {
+        error_occured = true;
+        console.error(`Error from python: ${data}`);
+    });
 
-    py.on('close', () => {
-        console.log('Returned to javascript');
+    py.on("close", () => {
+        console.log("Returned to javascript");
+
+        if (error_occured) {
+            console.log(`Error occured ${error_occured}`);
+            loading_parent.style.visibility = "visible";
+            loading_parent.className = "alert alert-danger";
+            loading.innerText = "Error! (Some file might be missing)";
+
+            error_occured = false;
+        } else {
+            footer.parentElement.className = "card-footer text-muted";
+            footer.parentElement.style.position = "relative";
+            loading_parent.style.visibility = "hidden";
+        }
     });
 }
 /////////////////////////////////////////////////////////

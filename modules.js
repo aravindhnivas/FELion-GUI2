@@ -42,7 +42,7 @@ function openfiles(title, fileTypeName, fileExtensions) {
 ///////////////////////////////////
 
 //Function to grab all the felix file in the current directory
-function getAllFelixFiles(location) {
+function getAllFelixFiles(location, filetype) {
     return new Promise((resolve, reject) => {
         let sendobj = {}
         try {
@@ -51,7 +51,7 @@ function getAllFelixFiles(location) {
             //Grabbing all the available felix files and updating it to folder_tree
             sendobj.allfelixfiles = fs
                 .readdirSync(location)
-                .filter(felixfile => felixfile.endsWith(".felix") || felixfile.endsWith(".cfelix"));
+                .filter(felixfile => felixfile.endsWith(filetype[0]) || felixfile.endsWith(filetype[filetype.length - 1]));
 
             sendobj.allFolders = fs
                 .readdirSync(location)
@@ -67,10 +67,10 @@ function getAllFelixFiles(location) {
 ///////////////////////////////////
 
 //Function to update the folder_tree view
-function folder_tree_update(location, folderID) {
+function folder_tree_update(location, folderID, filetype) {
 
     //Getting all the avaiable felix files (and update it into folder_tree explorer)
-    getAllFelixFiles(location)
+    getAllFelixFiles(location, filetype)
         .then((get_obj) => {
 
             //Clearing existing files in the folder_tree
@@ -102,7 +102,7 @@ function folder_tree_update(location, folderID) {
 
             console.log('[UPDATE]: Folder_tree_updated');
         })
-        .catch(err => dialog.showErrorBox(mainWindow, { title: "Error", content: `Couldn't get the felixfiles at this location.\nDetailed result: ${err}` }))
+        .catch(err => console.log("Couldn't get the felixfiles at this location.\nDetailed result:", err))
 }
 
 ///////////////////////////////////
@@ -141,7 +141,8 @@ function nofileSelectedLabel(fileLabelID) {
 
 
 //saving details to local directory
-const save_path = path.resolve(".", ".FELion_save_data.json");
+let save_path = path.resolve(".", ".FELion_save_data.json");
+
 
 ///////////////////////////////////
 
@@ -155,36 +156,17 @@ function readfile() {
                 reject("[UPDATE]: No files to read from local disk")
 
             } else {
+
+                console.log('File Read');
+
                 received_data = JSON.parse(data);
+                console.log(received_data);
                 resolve(received_data);
             }
         });
     })
 }
-
 ///////////////////////////////////
-
-//Function to writing the location and filenames last used to a local disk HOME directory
-function writeFileToDisk(location, felixfiles, basenames) {
-
-    let save_data = {};
-    //saving data information
-    save_data.location = location;
-    save_data.felixfiles = felixfiles;
-    save_data.basenames = basenames;
-
-    console.log("Writing file", save_data);
-
-    //Writing file to local disk
-    fs.writeFile(save_path, JSON.stringify(save_data), err => {
-        console.log("[UPDATE]: Successfully file information written to local disk", save_data);
-        if (err) throw err;
-    });
-}
-
-///////////////////////////////////
-
-
 
 // Exporting functions from this module
 module.exports.openfiles = openfiles;
@@ -192,4 +174,4 @@ module.exports.folder_tree_update = folder_tree_update;
 module.exports.fileSelectedLabel = fileSelectedLabel;
 module.exports.nofileSelectedLabel = nofileSelectedLabel;
 module.exports.readfile = readfile;
-module.exports.writeFileToDisk = writeFileToDisk;
+module.exports.save_path = save_path;
