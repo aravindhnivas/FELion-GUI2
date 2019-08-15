@@ -2,7 +2,7 @@
 	"Print to console": {
 		"scope": "javascript,typescript",
 		"prefix": "cl",
-		"body": ["console.log('$1');", "$2"],
+		"body": ["console.log('$1');"],
 		"description": "Log output to console"
 	},
 
@@ -23,7 +23,7 @@
 		"description": "Arrow function"
 	  },
 
-	  "Arrow function": {
+	  "Arrow function2": {
 		"prefix": "arwfn",
 		"body": [
 		  "const $1 = ($2) => {",
@@ -31,5 +31,13 @@
 		  "}"
 		],
 		"description": "Arrow function"
+	  },
+
+	  "Document QuerySelector": {
+		"prefix": "docq",
+		"body": [
+		  "document.querySelector('$1')"
+		],
+		"description": "Document QuerySelector"
 	  }
 }
