@@ -1,61 +1,69 @@
-'use strict'
+"use strict";
 
-const { remote } = require('electron');
+const { remote } = require("electron");
 const dialog = remote.dialog;
 const mainWindow = remote.getCurrentWindow();
 const path = require("path");
 const fs = require("fs");
 
 function openfiles(title, fileTypeName, fileExtensions) {
-
     return new Promise((resolve, reject) => {
-
         console.log("[modules]: Sending files");
         let send_obj;
 
         const options = {
-
             title: title,
             filters: [
                 { name: fileTypeName, extensions: fileExtensions },
-                { name: 'All Files', extensions: ['*'] }
+                { name: "All Files", extensions: ["*"] }
             ],
-            properties: ['openFile', 'multiSelections'],
+            properties: ["openFile", "multiSelections"]
         };
 
-        dialog.showOpenDialog(mainWindow, options).then(files => {
-            send_obj = {
-                files: files.filePaths,
-                location: path.dirname(files.filePaths[0])
-            };
-            console.log("[modules]: File sent succesfully", send_obj);
-            resolve(send_obj);
-
-        }).catch(error => {
-            console.log("[modules]: Error occured");
-            reject(new Error(error));
-
-        });
+        dialog
+            .showOpenDialog(mainWindow, options)
+            .then(files => {
+                send_obj = {
+                    files: files.filePaths,
+                    location: path.dirname(files.filePaths[0])
+                };
+                console.log("[modules]: File sent succesfully", send_obj);
+                resolve(send_obj);
+            })
+            .catch(error => {
+                console.log("[modules]: Error occured");
+                reject(new Error(error));
+            });
     });
-};
+}
 
 ///////////////////////////////////
 
 //Function to grab all the felix file in the current directory
 function getAllFelixFiles(location, filetype) {
     return new Promise((resolve, reject) => {
-        let sendobj = {}
+        console.log("Filetype received: ", filetype);
+
+        let sendobj = {};
+
         try {
-
-
             //Grabbing all the available felix files and updating it to folder_tree
-            sendobj.allfelixfiles = fs
-                .readdirSync(location)
-                .filter(felixfile => felixfile.endsWith(filetype[0]) || felixfile.endsWith(filetype[filetype.length - 1]));
+            if (filetype[0] === ".mass") {
+                sendobj.allFilenames = fs
+                    .readdirSync(location)
+                    .filter(filename => filename.endsWith(filetype[0]));
+            } else if (filetype[0] === ".felix") {
+                sendobj.allFilenames = fs
+                    .readdirSync(location)
+                    .filter(filename => filename.endsWith(filetype[0]) || filename.endsWith(filetype[1]));
+            }
 
             sendobj.allFolders = fs
                 .readdirSync(location)
-                .filter(felixfile => fs.statSync(path.join(location, felixfile)).isDirectory());
+                .filter(filename => fs.statSync(path.join(location, filename)).isDirectory());
+
+            console.log("[Folder update]: Allfiles ", sendobj.allFilenames);
+            console.log("[Folder update]: Allfolder ", sendobj.allFolders);
 
             resolve(sendobj);
         } catch (error) {
@@ -68,17 +76,14 @@ function getAllFelixFiles(location, filetype) {
 
 //Function to update the folder_tree view
 function folder_tree_update(location, folderID, filetype) {
-
     //Getting all the avaiable felix files (and update it into folder_tree explorer)
     getAllFelixFiles(location, filetype)
-        .then((get_obj) => {
-
+        .then(get_obj => {
             //Clearing existing files in the folder_tree
             while (filebrowser.hasChildNodes()) filebrowser.removeChild(filebrowser.childNodes[0]);
 
             //Appending folders to filebrowserID
             get_obj.allFolders.forEach(folder => {
-
                 folderID.append(
                     `<button type="button" class="folders btn btn-link" id=${folder} value=${folder}>
                         <img src="../icons/folder.svg">${folder}
@@ -87,22 +92,23 @@ function folder_tree_update(location, folderID, filetype) {
             });
 
             //A horizontal line to separate folder from files
-            folderID.append(`<hr>`)
+            folderID.append(`<hr>`);
 
             //Appending files to filebrowserID
-            get_obj.allfelixfiles.forEach(felixfile => {
-
+            get_obj.allFilenames.forEach(filename => {
                 folderID.append(
                     `<div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="filecheck custom-control-input" id=${felixfile} value="${felixfile}">
-                        <label class="custom-control-label" for="${felixfile}" style="color: black">${felixfile}</label>
+                        <input type="checkbox" class="filecheck custom-control-input" id=${filename} value="${filename}">
+                        <label class="custom-control-label" for="${filename}" style="color: black">${filename}</label>
                     </div>`
-                )
-            })
+                );
+            });
 
-            console.log('[UPDATE]: Folder_tree_updated');
+            console.log("[UPDATE]: Folder_tree_updated");
         })
-        .catch(err => console.log("Couldn't get the felixfiles at this location.\nDetailed result:", err))
+        .catch(err =>
+            console.log("Couldn't get the felixfiles at this location.\nDetailed result:", err)
+        );
 }
 
 ///////////////////////////////////
@@ -111,38 +117,27 @@ function folder_tree_update(location, folderID, filetype) {
 
 //Function to display location and label
 function fileSelectedLabel(location, files, locationLabelID, fileLabelID) {
+    files.length == 0 ? (filePaths = []) : "";
 
-    files.length == 0 ? filePaths = [] : ""
+    locationLabelID.attr("class", "alert alert-info").html(`Location: ${location}`);
 
-    locationLabelID
-        .attr("class", "alert alert-info")
-        .html(`Location: ${location}`);
+    fileLabelID.attr("class", "alert alert-info").html(`Files: ${files}`);
 
-    fileLabelID
-        .attr("class", "alert alert-info")
-        .html(`Files: ${files}`);
-
-    console.log('[UPDATE]: File(s) selected label updated');
+    console.log("[UPDATE]: File(s) selected label updated");
 }
 
 ///////////////////////////////////
 
 //Funtion to display no file has been selected
 function nofileSelectedLabel(fileLabelID) {
-
-    fileLabelID
-        .attr("class", "alert alert-danger")
-        .html("No Files selected");
+    fileLabelID.attr("class", "alert alert-danger").html("No Files selected");
     loading_parent.style.visibility = "hidden";
 
-    console.log('[UPDATE]: No file selected label updated');
+    console.log("[UPDATE]: No file selected label updated");
 }
-
-
 
 //saving details to local directory
 let save_path = path.resolve(".", ".FELion_save_data.json");
-
 
 ///////////////////////////////////
 
@@ -151,21 +146,32 @@ function readfile() {
     return new Promise((resolve, reject) => {
         let received_data;
         fs.readFile(save_path, (err, data) => {
-
             if (err) {
-                reject("[UPDATE]: No files to read from local disk")
-
+                reject(`[UPDATE]: No files to read from local disk: ${err}`);
             } else {
-
-                console.log('File Read');
+                console.log("File Read");
 
                 received_data = JSON.parse(data);
                 console.log(received_data);
                 resolve(received_data);
             }
         });
-    })
+    });
 }
+
+//Filexist
+function fileExist(filePath) {
+    return new Promise((resolve, reject) => {
+        fs.access(filePath, fs.F_OK, err => {
+            if (err) {
+                return reject("JSON backupFile doesn't exist");
+            }
+            //file exists
+            resolve("JSON backupFile exist");
+        });
+    });
+}
+
 ///////////////////////////////////
 
 // Exporting functions from this module
@@ -175,3 +181,4 @@ module.exports.fileSelectedLabel = fileSelectedLabel;
 module.exports.nofileSelectedLabel = nofileSelectedLabel;
 module.exports.readfile = readfile;
 module.exports.save_path = save_path;
+module.exports.fileExist = fileExist;

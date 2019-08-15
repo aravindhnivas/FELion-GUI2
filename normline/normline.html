@@ -54,8 +54,7 @@
 
                 <!--Help Toogles-->
                 <li class="nav-item">
-                    <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" id="help"
-                        data-on="Help" data-off="Help">
+                    <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" id="help" data-on="Help" data-off="Help">
                 </li>
 
             </ul>
@@ -75,11 +74,9 @@
 
             <!--Open Button-->
             <div class="col">
-                <button type="button" class="btn btn-secondary" id="normline-open-btn" data-toggle="tooltip"
-                    data-placement="top" title="To open multiple files">Open File(s)</button>
+                <button type="button" class="btn btn-secondary" id="normline-open-btn" data-toggle="tooltip" data-placement="top" title="To open multiple files">Open File(s)</button>
 
-                <button type="button" class="btn btn-warning" id="restart-btn" data-toggle="tooltip"
-                    data-placement="right" title="To start this page">Restart</button>
+                <button type="button" class="btn btn-warning" id="restart-btn" data-toggle="tooltip" data-placement="right" title="To start this page">Restart</button>
             </div>
 
         </div>
@@ -87,15 +84,13 @@
         <!--File Labels-->
         <div class="row mt-3">
             <div class="col">
-                <label id="locationLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right"
-                    title="Selected location">Location:</label>
+                <label id="locationLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right" title="Selected location">Location:</label>
             </div>
         </div>
 
         <div class="row">
             <div class="col">
-                <label id="fileLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right"
-                    title="Selected files">Files:</label>
+                <label id="fileLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right" title="Selected files">Files:</label>
             </div>
         </div>
 
@@ -103,23 +98,21 @@
         <div class="row mt-3">
 
             <!--Function Buttons-->
-            <ul>
-                <button type="button" class="btn btn-primary" id="baseline-btn" data-toggle="tooltip"
-                    data-placement="bottom" title="For baseline correction">Create Baseline</button>
-                <button type="button" class="btn btn-primary" id="normlinePlot-btn" data-toggle="tooltip"
-                    data-placement="top" title="To plot Normalised spectrum">Felix Plot</button>
-            </ul>
+            <div class="col-sm-4">
+                <button type="button" class="btn btn-primary" id="baseline-btn" data-toggle="tooltip" data-placement="bottom" title="For baseline correction">Create Baseline</button>
+                <button type="button" class="btn btn-primary" id="normlinePlot-btn" data-toggle="tooltip" data-placement="top" title="To plot Normalised spectrum">Felix Plot</button>
+            </div>
 
             <!--Delta value-->
             <div class="col-sm-2">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Delta (default=2)" id="delta" , value=1
-                        data-toggle="tooltip" data-placement="bottom" title="Delta value for binnsteps (default=1)">
+                    <input type="text" class="form-control" placeholder="Delta (default=2)" id="delta" , value=1 data-toggle="tooltip" data-placement="bottom" title="Delta value for binnsteps (default=1)">
                     <div class="input-group-append">
                         <span class="input-group-text">Delta</span>
                     </div>
                 </div>
             </div>
+
 
             <!--Loading message-->
             <div class="col-sm-2" id="loading-parent">
@@ -132,11 +125,11 @@
         <!--////////////////////////////////////////////////////////////////////-->
 
         <!--File Explorer and Plotting Area BEGINS-->
-        <div class="container-fluid">
+        <div class="container-fluid mt-3 ml-0">
             <div class="row">
 
                 <!--File Explorer BEGINS-->
-                <div class="col-2 ml-0">
+                <div class="col ml-0">
                     <div class="alert alert-primary" id="fileExplorer">
 
                         <!--File Explorer Heading-->
@@ -146,8 +139,7 @@
                         <!--File Explorer Contents-->
                         <button type="button" class="btn btn-link" id="goBackFolder"><img
                                 src="../icons/goBack.svg"></button>
-                        <div id="filebrowser" data-toggle="tooltip" data-placement="right"
-                            title="Select file(s) to plot">
+                        <div id="filebrowser" data-toggle="tooltip" data-placement="right" title="Select file(s) to plot">
                         </div>
 
                     </div>
