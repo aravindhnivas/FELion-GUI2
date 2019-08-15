@@ -70,15 +70,19 @@
     <div class="container-fluid mt-3 mr-2" id="normline-main-containter">
 
         <!--Open buttons and Labels-->
+
+        <!--Restart Button-->
         <div class="row mt-3">
-
-            <!--Open Button-->
-            <div class="col">
-                <button type="button" class="btn btn-secondary" id="normline-open-btn" data-toggle="tooltip" data-placement="top" title="To open multiple files">Open File(s)</button>
-
+            <div class="col d-flex justify-content-end">
                 <button type="button" class="btn btn-warning" id="restart-btn" data-toggle="tooltip" data-placement="right" title="To start this page">Restart</button>
             </div>
+        </div>
 
+        <!--Open Button-->
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-secondary" id="normline-open-btn" data-toggle="tooltip" data-placement="top" title="To open multiple files">Open File(s)</button>
+            </div>
         </div>
 
         <!--File Labels-->
@@ -97,25 +101,28 @@
         <!--Buttons-->
         <div class="row mt-3">
 
-            <!--Function Buttons-->
-            <div class="col-sm-4">
-                <button type="button" class="btn btn-primary" id="baseline-btn" data-toggle="tooltip" data-placement="bottom" title="For baseline correction">Create Baseline</button>
-                <button type="button" class="btn btn-primary" id="normlinePlot-btn" data-toggle="tooltip" data-placement="top" title="To plot Normalised spectrum">Felix Plot</button>
-            </div>
+            <div class="d-flex justify-content-center">
 
-            <!--Delta value-->
-            <div class="col-sm-2">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Delta (default=2)" id="delta" , value=1 data-toggle="tooltip" data-placement="bottom" title="Delta value for binnsteps (default=1)">
-                    <div class="input-group-append">
-                        <span class="input-group-text">Delta</span>
+                <!--Create baseline and FELIX plot buttons-->
+                <div class="col">
+                    <button type="button" class="btn btn-primary" id="baseline-btn" data-toggle="tooltip" data-placement="bottom" title="For baseline correction">Create Baseline</button>
+                    <button type="button" class="btn btn-primary" id="normlinePlot-btn" data-toggle="tooltip" data-placement="top" title="To plot Normalised spectrum">Felix Plot</button>
+                </div>
+
+                <!--Delta value-->
+                <div class="col">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Delta (default=2)" id="delta" , value=1 data-toggle="tooltip" data-placement="bottom" title="Delta value for binnsteps (default=1)">
+                        <div class="input-group-append">
+                            <span class="input-group-text">Delta</span>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
-
             <!--Loading message-->
-            <div class="col-sm-2" id="loading-parent">
+            <div class="col" id="loading-parent">
                 <ul id="loading" style="text-align:center"></ul>
             </div>
 
