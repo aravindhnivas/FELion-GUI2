@@ -4,7 +4,7 @@ const { remote } = require("electron");
 const path = require("path");
 const spawn = require("child_process").spawn;
 const fs = require("fs");
-const { openfiles } = require("../modules");
+const { openfiles, folder_tree_update, fileSelectedLabel, nofileSelectedLabel, readfile, writeFileToDisk } = require("../modules");
 
 /////////////////////////////////////Initialising BEGIN/////////////////////////////////////
 
@@ -20,10 +20,10 @@ const helpOff = () => {
 };
 
 //Document Ready
-$(document).ready(function() {
+$(document).ready(function () {
     $("#normline-open-btn").click(openFile);
 
-    $("#help").change(function() {
+    $("#help").change(function () {
         let info = $(this).prop("checked");
         console.log("Help: ", info);
         if (info) {
@@ -33,19 +33,41 @@ $(document).ready(function() {
         }
     });
 
-    $("#goBackFolder").click(function() {
+    $("#goBackFolder").click(function () {
         fileLocation = path.resolve(path.join(fileLocation, "../"));
 
         //Updating the folder tree for the new location
-        folder_tree_update(fileLocation);
+        folder_tree_update(fileLocation, $folderID);
 
         //Updating the display for location and file label
         fileChecked = [];
         filePaths = [];
         baseName = [];
-        fileSelectedLabel(fileLocation, baseName);
+        fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
     });
-    readfile();
+
+    //Reading file from local disk
+    readfile($locationLabelID, $fileLabelID, $folderID)
+        .then(received_data => {
+
+            filePaths = received_data.felixfiles;
+            fileLocation = received_data.location;
+            baseName = received_data.basenames;
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+            folder_tree_update(fileLocation, $folderID);
+
+            console.log("[UPDATE]: File read from local disk", received_data);
+
+        })
+        .catch(err => {
+
+            filePaths = []
+            fileLocation = ''
+            baseName = []
+            nofileSelectedLabel(fileLabelID)
+
+            console.log(err);
+        })
 });
 /////////////////////////////////////Initialising END/////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -56,44 +78,17 @@ $(document).ready(function() {
 let filePaths;
 let fileLocation;
 let baseName = [];
-let save_data;
-let allFiles = [];
-let allFolder = [];
 let fileChecked = [];
 
+//Display label ID's
+const $folderID = $("#filebrowser")
+const $locationLabelID = $("#locationLabel")
+const $fileLabelID = $("#fileLabel")
+
 //DOM handler variables
-let filebrowser = document.querySelector("#filebrowser");
 let normlineBtn = document.querySelector("#normlinePlot-btn");
 let loading = document.querySelector("#loading");
 let loading_parent = document.querySelector("#loading-parent");
-
-//Other variables
-const save_path = path.join(remote.app.getPath("home"), "FELion_save_data.json");
-
-///////////////////////////////////
-
-//Function to ReadFile (from Local disk)
-function readfile() {
-    fs.readFile(save_path, (err, data) => {
-        if (err) {
-            save_data = { location: "", filelists: [] };
-            nofileSelectedLabel();
-        } else {
-            save_data = JSON.parse(data);
-
-            fileLocation = save_data.location;
-            filePaths = save_data.filelists;
-            baseName = save_data.basename;
-
-            fileSelectedLabel(fileLocation, baseName);
-            folder_tree_update(fileLocation);
-
-            console.log("Read file", save_data);
-        }
-    });
-}
-
-///////////////////////////////////
 
 const loadingDisplay = () => {
     return new Promise(resolve => {
@@ -116,10 +111,10 @@ function openFile() {
             baseName = filePaths.map(file => `${path.basename(file)}, `);
 
             //Displaying the location and label
-            fileSelectedLabel(fileLocation, baseName);
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
 
             //Updating the folder_tree
-            folder_tree_update(fileLocation);
+            folder_tree_update(fileLocation, $folderID);
 
             //Writing the last used location and filename to local disk
             writeFileToDisk(fileLocation, filePaths, baseName);
@@ -135,115 +130,15 @@ function openFile() {
             console.error("[Normline]: ", error);
 
             //Displaying NO file is available
-            nofileSelectedLabel();
+            nofileSelectedLabel($fileLabelID);
         });
-}
-
-///////////////////////////////////
-
-//Function to display location and label
-function fileSelectedLabel(location, files) {
-
-    files.length == 0 ? filePaths = [] : ""
-
-    $("#locationLabel")
-        .attr("class", "alert alert-info")
-        .html(`Location: ${location}`);
-
-    $("#fileLabel")
-        .attr("class", "alert alert-info")
-        .html(`Files: ${files}`);
-}
-
-///////////////////////////////////
-
-//Funtion to display no file has been selected
-function nofileSelectedLabel() {
-
-    $("#fileLabel")
-        .attr("class", "alert alert-danger")
-        .html("No Files selected");
-    loading_parent.style.visibility = "hidden";
-}
-
-///////////////////////////////////
-
-//Function to grab all the felix file in the current directory
-function getAllFelixFiles(location) {
-    return new Promise((resolve, reject) => {
-        try {
-            //Clearing existing files in the folder_tree
-            while (filebrowser.hasChildNodes()) filebrowser.removeChild(filebrowser.childNodes[0]);
-
-            //Grabbing all the available felix files and updating it to folder_tree
-            allFiles = fs
-                .readdirSync(location)
-                .filter(felixfile => felixfile.endsWith(".felix") || felixfile.endsWith(".cfelix"));
-
-            allFolder = fs
-                .readdirSync(location)
-                .filter(felixfile => fs.statSync(path.join(location, felixfile)).isDirectory());
-
-            resolve("Done");
-        } catch (error) {
-            reject(new Error(error));
-        }
-    });
-}
-
-///////////////////////////////////
-
-//Function to update the folder_tree view
-function folder_tree_update(location) {
-    //Getting all the avaiable felix files (and update it into folder_tree explorer)
-    getAllFelixFiles(location).then(() => {
-        //Appending obtained folder as well to navigate around
-        allFolder.forEach(folder => {
-            $("#filebrowser").append(
-                `<button type="button" class="folders btn btn-link" id=${folder} value=${folder}><img
-                    src="../icons/folder.svg">${folder}</button>`
-            );
-        });
-
-        $("#filebrowser").append(`<hr>`);
-
-        //Apending checkbox labels for felix files in folder_tree
-        allFiles.forEach(felixfile => {
-            if (felixfile.endsWith(".felix") || felixfile.endsWith(".cfelix")) {
-                $("#filebrowser").append(
-                    `<div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="filecheck custom-control-input" id=${felixfile} value="${felixfile}">
-                            <label class="custom-control-label" for="${felixfile}" style="color: black">${felixfile}</label>
-                        </div>`
-                );
-            }
-        });
-    });
-}
-
-///////////////////////////////////
-
-//Function to writing the location and filenames last used to a local disk HOME directory
-function writeFileToDisk(location, filenames, basenames) {
-    //saving data information
-    save_data.location = location;
-    save_data.filelists = filenames;
-    save_data.basename = basenames;
-
-    console.log("Writing file", save_data);
-
-    //Writing file to local disk
-    fs.writeFile(save_path, JSON.stringify(save_data), err => {
-        console.log("Successfully file information written to local disk", save_data);
-        if (err) throw err;
-    });
 }
 
 ///////////////////////////////////
 
 //Handling event when a file is selected from the folder_tree to plot
 //Saving the selected file list first
-$("#filebrowser").on("click", ".filecheck", event => {
+$folderID.on("click", ".filecheck", event => {
     if (event.target.checked) {
         //If file has checked value then append the file to fileChecked array
         fileChecked.push(event.target.value);
@@ -258,26 +153,26 @@ $("#filebrowser").on("click", ".filecheck", event => {
     }
 
     baseName = fileChecked.map(file => `${path.basename(file)}, `);
-    fileSelectedLabel(fileLocation, baseName);
+    fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
 
     console.log("Selected files: ", fileChecked);
 });
 
 //Handling event when a folder is clicked
-$("#filebrowser").on("click", ".folders", event => {
+$folderID.on("click", ".folders", event => {
     let folderName = event.target.value;
     console.log("Folder clicked: ", folderName);
 
     fileLocation = path.join(fileLocation, folderName);
 
     //Updating the folder tree for the new location
-    folder_tree_update(fileLocation);
+    folder_tree_update(fileLocation, $folderID);
 
     //Updating the display for location and file label
     fileChecked = [];
     filePaths = [];
     baseName = [];
-    fileSelectedLabel(fileLocation, baseName);
+    fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
 });
 
 ///////////////////////////////////
@@ -296,7 +191,7 @@ function runPlot() {
             baseName = [];
             filePaths.forEach(x => baseName.push(`${path.basename(x)}, `));
 
-            fileSelectedLabel(fileLocation, baseName);
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
             writeFileToDisk(fileLocation, filePaths, baseName);
             resolve("completed");
         } else if (!filePaths.length == 0) { resolve("completed") } else { reject(new Error("No File selected")) }
@@ -310,7 +205,7 @@ $(document).on("click", "#normlinePlot-btn", () => {
         })
         .catch(err => {
             console.log("Error occured: ", err);
-            nofileSelectedLabel();
+            nofileSelectedLabel($fileLabelID);
             normlineBtn.className = "btn btn-danger";
             setTimeout(() => (normlineBtn.className = "btn btn-primary"), 2000);
         });
@@ -321,7 +216,7 @@ $(document).on("click", "#baseline-btn", () => {
         .then(basePlot())
         .catch(err => {
             console.log("Error occured: ", err);
-            nofileSelectedLabel();
+            nofileSelectedLabel($fileLabelID);
             baselineBtn.className = "btn btn-danger";
             setTimeout(() => (baselineBtn.className = "btn btn-primary"), 2000);
         });
