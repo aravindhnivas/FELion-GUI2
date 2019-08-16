@@ -173,7 +173,7 @@ function fileExist(filePath) {
 }
 
 
-function ReadfileFromLocalDisk(filetype, folderID, locationLabelID, fileLabelID) {
+func/* tion ReadfileFromLocalDisk(filetype, folderID, locationLabelID, fileLabelID) {
 
     let readFileContents;
 
@@ -245,7 +245,7 @@ function ReadfileFromLocalDisk(filetype, folderID, locationLabelID, fileLabelID)
         });
 
     return Promise.resolve(readFileContents)
-}
+} */
 
 ///////////////////////////////////
 
@@ -289,4 +289,3 @@ module.exports.save_path = save_path;
 module.exports.fileExist = fileExist;
 module.exports.loadingDisplay = loadingDisplay;
 module.exports.plottedDisplay = plottedDisplay;
-module.exports.ReadfileFromLocalDisk = ReadfileFromLocalDisk;
