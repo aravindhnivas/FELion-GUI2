@@ -39,7 +39,6 @@ const $fileLabelID = $("#fileLabel");
 
 //DOM handler variables
 let massBtn = document.querySelector("#massPlot-btn");
-let loading = document.querySelector("#loading");
 //let footer = document.querySelector("#footer");
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -74,6 +73,8 @@ function readFileUpdate(received_data) {
     filePaths = received_data.mass.files;
     fileLocation = received_data.mass.location;
     baseName = received_data.mass.basenames;
+
+    fileChecked = filePaths.map(file => path.basename(file))
 
     //Displaying label
     fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
@@ -276,7 +277,7 @@ function runPlot() {
     });
 }
 
-$(document).on("click", "#massPlot-btn", () => {
+$("#massPlot-btn").click(() => {
     runPlot()
         .then(() => {
             loadingDisplay().then(masspec(filePaths));

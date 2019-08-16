@@ -63,20 +63,6 @@ $(document).ready(function () {
 });
 
 /////////////////////////////////////Initialising END/////////////////////////////////////
-
-
-/* ReadfileFromLocalDisk({ filetype: [".felix", ".cfelix"] }, $folderID, $locationLabelID, $fileLabelID)
-    .then((received_data) => {
-
-        //Reading file content
-        filePaths = received_data.felix.files;
-        fileLocation = received_data.felix.location;
-        baseName = received_data.felix.basenames;
-
-        //Reading full filecontents including massfile info for writing details with massfile.
-        readFileContents = received_data;
-    }) */
-
 function readFileUpdate(received_data) {
 
     console.log("Displaying read datas: ", received_data);
@@ -85,6 +71,7 @@ function readFileUpdate(received_data) {
     filePaths = received_data.felix.files;
     fileLocation = received_data.felix.location;
     baseName = received_data.felix.basenames;
+    fileChecked = filePaths.map(file => path.basename(file))
 
     //Displaying label
     fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
@@ -93,6 +80,7 @@ function readFileUpdate(received_data) {
 
     //Reading full filecontents including massfile info for writing details with massfile.
     readFileContents = received_data;
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
