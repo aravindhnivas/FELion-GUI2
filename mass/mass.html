@@ -52,7 +52,8 @@
 
                 <!--Help Toogles-->
                 <li class="nav-item">
-                    <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" id="help" data-on="Help" data-off="Help">
+                    <input type="checkbox" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" id="help"
+                        data-on="Help" data-off="Help">
                 </li>
 
             </ul>
@@ -70,27 +71,31 @@
         <!--Restart Button-->
         <div class="row mt-3">
             <div class="col d-flex justify-content-end">
-                <button type="button" class="btn btn-warning" id="restart-btn" data-toggle="tooltip" data-placement="right" title="To start this page">Restart</button>
+                <button type="button" class="btn btn-warning" id="restart-btn" data-toggle="tooltip"
+                    data-placement="right" title="To start this page">Restart</button>
             </div>
         </div>
 
         <!--Open Button-->
         <div class="row">
             <div class="col">
-                <button type="button" class="btn btn-secondary" id="normline-open-btn" data-toggle="tooltip" data-placement="top" title="To open multiple files">Open File(s)</button>
+                <button type="button" class="btn btn-secondary" id="normline-open-btn" data-toggle="tooltip"
+                    data-placement="top" title="To open multiple files">Open File(s)</button>
             </div>
         </div>
 
         <!--File Labels-->
         <div class="row mt-3">
             <div class="col">
-                <label id="locationLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right" title="Selected location">Location:</label>
+                <label id="locationLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right"
+                    title="Selected location">Location:</label>
             </div>
         </div>
 
         <div class="row">
             <div class="col">
-                <label id="fileLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right" title="Selected files">Files:</label>
+                <label id="fileLabel" class="alert alert-info" data-toggle="tooltip" data-placement="right"
+                    title="Selected files">Files:</label>
             </div>
         </div>
 
@@ -98,14 +103,13 @@
         <div class="row mt-3">
 
             <!--Function Buttons-->
-            <div class="col">
-                <button type="button" class="btn btn-primary" id="massPlot-btn" data-toggle="tooltip" data-placement="top" title="To plot Mass spectrum">Mass Spectrum</button>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-primary" id="massPlot-btn" data-toggle="tooltip"
+                    data-placement="top" title="To plot Mass spectrum">Mass Spectrum</button>
             </div>
 
             <!--Loading message-->
-            <div class="col-sm-2" id="loading-parent">
-                <ul id="loading" style="text-align:center"></ul>
-            </div>
+            <div class="col" id="loading"></div>
 
         </div>
         <!--Buttons ENDS-->
@@ -127,7 +131,8 @@
                         <!--File Explorer Contents-->
                         <button type="button" class="btn btn-link" id="goBackFolder"><img
                                 src="../icons/goBack.svg"></button>
-                        <div id="filebrowser" data-toggle="tooltip" data-placement="right" title="Select file(s) to plot">
+                        <div id="filebrowser" data-toggle="tooltip" data-placement="right"
+                            title="Select file(s) to plot">
                         </div>
 
                     </div>

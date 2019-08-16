@@ -14,7 +14,9 @@ const {
     nofileSelectedLabel,
     readfile,
     save_path,
-    fileExist
+    fileExist,
+    plottedDisplay,
+    loadingDisplay
 } = require("../modules");
 
 /////////////////////////////////////Initialising BEGIN/////////////////////////////////////
@@ -38,7 +40,6 @@ const $fileLabelID = $("#fileLabel");
 //DOM handler variables
 let massBtn = document.querySelector("#massPlot-btn");
 let loading = document.querySelector("#loading");
-let loading_parent = document.querySelector("#loading-parent");
 let footer = document.querySelector("#footer");
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -55,10 +56,10 @@ const helpOff = () => {
 };
 
 //Document Ready
-$(document).ready(function() {
+$(document).ready(function () {
     $("#normline-open-btn").click(openFile);
 
-    $("#help").change(function() {
+    $("#help").change(function () {
         $(this).prop("checked") ? helpOn() : helpOff();
     });
     $("#restart-btn").click(() => location.reload());
@@ -147,16 +148,6 @@ function writeFileToDisk(location, files, basenames) {
     });
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
-
-const loadingDisplay = () => {
-    return new Promise(resolve => {
-        loading_parent.style.visibility = "visible";
-        loading_parent.className = "alert alert-warning";
-        loading.innerText = "Please wait...";
-        resolve("Done");
-    });
-};
-
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 //Function for Opening file
@@ -264,7 +255,7 @@ $folderID.on("click", ".folders", event => {
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 //Handling event when back button is pressed
-$("#goBackFolder").click(function() {
+$("#goBackFolder").click(function () {
     fileLocation = path.resolve(path.join(fileLocation, "../"));
     refresh_folder_tree_forNewLocation(fileLocation, $locationLabelID, $fileLabelID, $folderID);
 });
@@ -357,15 +348,13 @@ function masspec(massfiles) {
 
         if (error_occured) {
             console.log(`Error occured ${error_occured}`);
-            loading_parent.style.visibility = "visible";
-            loading_parent.className = "alert alert-danger";
-            loading.innerText = "Error! (Some file might be missing)";
+            loadingDisplay(true)
 
             error_occured = false;
         } else {
             footer.parentElement.className = "card-footer text-muted";
             footer.parentElement.style.position = "relative";
-            loading_parent.style.visibility = "hidden";
+            plottedDisplay()
         }
     });
 }

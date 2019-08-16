@@ -172,7 +172,112 @@ function fileExist(filePath) {
     });
 }
 
+
+function ReadfileFromLocalDisk(filetype, folderID, locationLabelID, fileLabelID) {
+
+    let readFileContents;
+
+    const HOME = remote.app.getPath("home");
+
+    const readFileUpdate = (received_data) => {
+
+        console.log("Displaying read datas: ", received_data);
+
+        //Reading file content
+        const fileLocation = received_data.filetype[0].location;
+        const baseName = received_data.filetype[0].basenames;
+
+        //Displaying label
+        fileSelectedLabel(fileLocation, baseName, locationLabelID, fileLabelID);
+        folder_tree_update(fileLocation, folderID, filetype);
+
+        console.log("[UPDATE]: File read from local disk", received_data);
+
+        //Reading full filecontents including massfile info for writing details with massfile.
+        readFileContents = received_data;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    //Reading JSON backup file if it exists
+    fileExist(save_path)
+        .then(status => {
+
+            console.log(status);
+
+            //Reading file from local disk
+            readfile($locationLabelID, $fileLabelID, $folderID)
+                .then(received_data => {
+                    //Update filename and location values from read file and labels
+                    readFileUpdate(received_data);
+                })
+                .catch(err => {
+                    console.log(err);
+
+                    //If couldn't read file contents
+                    filePaths = [];
+                    fileLocation = HOME
+                    baseName = [];
+
+                    //Displaying nofile selected label
+                    nofileSelectedLabel($fileLabelID);
+
+                    //Displaying default location to user home directory and loading file tree from there
+                    fileSelectedLabel(fileLocation, baseName, locationLabelID, fileLabelID);
+                    folder_tree_update(fileLocation, folderID, [".felix", ".cfelix"]);
+                });
+        })
+        .catch(err => {
+            console.log(err);
+
+            const init_data = {
+                felix: { location: HOME, files: [], basenames: [] },
+                mass: { location: HOME, files: [], basenames: [] }
+            };
+
+            //Creating a backupFile
+            fs.writeFile(save_path, JSON.stringify(init_data), err => {
+                if (err) throw err;
+            });
+
+            console.log("JSON backupFile created");
+            readFileUpdate(init_data);
+        });
+
+    return Promise.resolve(readFileContents)
+}
+
 ///////////////////////////////////
+
+const loadingDisplay = (err = false) => {
+    return new Promise((resolve, reject) => {
+        if (err) {
+
+            let error_message = "Error! (Some file might be missing)"
+
+            $("#loading")
+                .html(`<div class='col-sm-2 alert alert-danger' id='loading'>${error_message}</div>`)
+                .css("visibility", "visible")
+
+            reject(error_message)
+        } else {
+
+            $("#loading")
+                .html("<div class='col-sm-2 alert alert-warning' id='loading'>Please wait...</div>")
+                .css("visibility", "visible")
+            resolve("Done");
+        }
+
+    });
+};
+
+const plottedDisplay = () => {
+    $("#loading").html("<div class='col-sm-2 alert alert-success' id='loading'>Plotted</div>")
+    setTimeout(() => $("#loading").css("visibility", "hidden"), 2000)
+}
+
+
+
 
 // Exporting functions from this module
 module.exports.openfiles = openfiles;
@@ -182,3 +287,6 @@ module.exports.nofileSelectedLabel = nofileSelectedLabel;
 module.exports.readfile = readfile;
 module.exports.save_path = save_path;
 module.exports.fileExist = fileExist;
+module.exports.loadingDisplay = loadingDisplay;
+module.exports.plottedDisplay = plottedDisplay;
+module.exports.ReadfileFromLocalDisk = ReadfileFromLocalDisk;

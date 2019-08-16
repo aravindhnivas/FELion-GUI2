@@ -1,9 +1,11 @@
 "use strict";
+
 //Importing required modules
 const { remote } = require("electron");
 const path = require("path");
 const spawn = require("child_process").spawn;
 const fs = require("fs");
+
 const {
     openfiles,
     folder_tree_update,
@@ -11,7 +13,10 @@ const {
     nofileSelectedLabel,
     readfile,
     save_path,
-    fileExist
+    fileExist,
+    plottedDisplay,
+    loadingDisplay,
+    //ReadfileFromLocalDisk
 } = require("../modules");
 
 /////////////////////////////////////Initialising BEGIN/////////////////////////////////////
@@ -33,8 +38,6 @@ const $fileLabelID = $("#fileLabel");
 
 //DOM handler variables
 let normlineBtn = document.querySelector("#normlinePlot-btn");
-let loading = document.querySelector("#loading");
-let loading_parent = document.querySelector("#loading-parent");
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,19 +53,32 @@ const helpOff = () => {
 };
 
 //Document Ready
-$(document).ready(function() {
+$(document).ready(function () {
     $("#normline-open-btn").click(openFile);
 
-    $("#help").change(function() {
+    $("#help").change(function () {
         $(this).prop("checked") ? helpOn() : helpOff();
     });
     $("#restart-btn").click(() => location.reload());
 });
 
 /////////////////////////////////////Initialising END/////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////
+
+
+/* ReadfileFromLocalDisk({ filetype: [".felix", ".cfelix"] }, $folderID, $locationLabelID, $fileLabelID)
+    .then((received_data) => {
+
+        //Reading file content
+        filePaths = received_data.felix.files;
+        fileLocation = received_data.felix.location;
+        baseName = received_data.felix.basenames;
+
+        //Reading full filecontents including massfile info for writing details with massfile.
+        readFileContents = received_data;
+    }) */
 
 function readFileUpdate(received_data) {
+
     console.log("Displaying read datas: ", received_data);
 
     //Reading file content
@@ -79,9 +95,12 @@ function readFileUpdate(received_data) {
     readFileContents = received_data;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+
 //Reading JSON backup file if it exists
 fileExist(save_path)
     .then(status => {
+
         console.log(status);
 
         //Reading file from local disk
@@ -143,14 +162,7 @@ function writeFileToDisk(location, files, basenames) {
     });
 }
 
-const loadingDisplay = () => {
-    return new Promise(resolve => {
-        loading_parent.style.visibility = "visible";
-        loading_parent.className = "alert alert-warning";
-        loading.innerText = "Please wait...";
-        resolve("Done");
-    });
-};
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -264,7 +276,7 @@ $folderID.on("click", ".folders", event => {
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 //Handling event when back button is pressed
-$("#goBackFolder").click(function() {
+$("#goBackFolder").click(function () {
     fileLocation = path.resolve(path.join(fileLocation, "../"));
     refresh_folder_tree_forNewLocation(fileLocation, $locationLabelID, $fileLabelID, $folderID);
 });
@@ -438,15 +450,13 @@ function normplot(felixfiles) {
 
         if (error_occured) {
             console.log(`Error occured ${error_occured}`);
-            loading_parent.style.visibility = "visible";
-            loading_parent.className = "alert alert-danger";
-            loading.innerText = "Error! (Some file might be missing)";
+            loadingDisplay(true)
 
             error_occured = false;
         } else {
             footer.parentElement.className = "card-footer text-muted";
             footer.parentElement.style.position = "relative";
-            loading_parent.style.visibility = "hidden";
+            plottedDisplay()
         }
     });
 }
