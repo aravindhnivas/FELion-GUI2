@@ -173,7 +173,7 @@ function fileExist(filePath) {
 }
 
 
-func/* tion ReadfileFromLocalDisk(filetype, folderID, locationLabelID, fileLabelID) {
+/* function ReadfileFromLocalDisk(filetype, folderID, locationLabelID, fileLabelID) {
 
     let readFileContents;
 
