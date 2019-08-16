@@ -40,7 +40,7 @@ const $fileLabelID = $("#fileLabel");
 //DOM handler variables
 let massBtn = document.querySelector("#massPlot-btn");
 let loading = document.querySelector("#loading");
-let footer = document.querySelector("#footer");
+//let footer = document.querySelector("#footer");
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -352,10 +352,10 @@ function masspec(massfiles) {
 
             error_occured = false;
         } else {
-            footer.parentElement.className = "card-footer text-muted";
-            footer.parentElement.style.position = "relative";
+            //footer.parentElement.className = "card-footer text-muted";
+            //footer.parentElement.style.position = "relative";
             plottedDisplay()
         }
     });
 }
-/////////////////////////////////////////////////////////
+//
