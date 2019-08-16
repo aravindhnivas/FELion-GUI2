@@ -71,7 +71,8 @@ function readFileUpdate(received_data) {
     filePaths = received_data.felix.files;
     fileLocation = received_data.felix.location;
     baseName = received_data.felix.basenames;
-    fileChecked = filePaths.map(file => path.basename(file))
+
+    fileChecked = [];
 
     //Displaying label
     fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
@@ -276,6 +277,10 @@ function runPlot() {
         if (!fileChecked.length == 0) {
             filePaths = fileChecked.map(felixfile => path.join(fileLocation, felixfile));
 
+            fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
+            writeFileToDisk(fileLocation, filePaths, baseName);
+            resolve("completed");
+        } else if (!filePaths.length == 0) {
             fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
             writeFileToDisk(fileLocation, filePaths, baseName);
             resolve("completed");
