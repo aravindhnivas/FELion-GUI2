@@ -257,14 +257,12 @@ const loadingDisplay = (err = false) => {
 
             $("#loading")
                 .html(`<div class='col-sm-2 alert alert-danger' id='loading'>${error_message}</div>`)
-                .css("visibility", "visible")
 
             reject(error_message)
         } else {
 
             $("#loading")
                 .html("<div class='col-sm-2 alert alert-warning' id='loading'>Please wait...</div>")
-                .css("visibility", "visible")
             resolve("Done");
         }
 
@@ -273,11 +271,8 @@ const loadingDisplay = (err = false) => {
 
 const plottedDisplay = () => {
     $("#loading").html("<div class='col-sm-2 alert alert-success' id='loading'>Plotted</div>")
-    setTimeout(() => $("#loading").css("visibility", "hidden"), 2000)
+
 }
-
-
-
 
 // Exporting functions from this module
 module.exports.openfiles = openfiles;
