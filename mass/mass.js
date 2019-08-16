@@ -266,18 +266,20 @@ $("#goBackFolder").click(function () {
 function runPlot() {
     return new Promise((resolve, reject) => {
         if (!fileChecked.length == 0) {
+
             filePaths = fileChecked.map(felixfile => path.join(fileLocation, felixfile));
 
             fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
             writeFileToDisk(fileLocation, filePaths, baseName);
             resolve("completed");
+
         } else if (!filePaths.length == 0) {
+
             fileSelectedLabel(fileLocation, baseName, $locationLabelID, $fileLabelID);
             writeFileToDisk(fileLocation, filePaths, baseName);
             resolve("completed");
-        } else {
-            reject(new Error("No File selected"));
-        }
+
+        } else reject(new Error("No File selected"))
     });
 }
 
