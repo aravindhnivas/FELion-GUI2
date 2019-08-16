@@ -64,19 +64,17 @@ class timescanplot:
         dataJson = json.dumps(m)
         print(dataJson)
 
+
 def var_find(fname, location, time=False):
 
-    ##print(f'###############\nFinding variables\nFile: {fname}\nLocation: {location}\n###############')
-
     if not fname is '':
+        
         os.chdir(location)
         if not time:
             var = {'res': 'm03_ao13_reso', 'b0': 'm03_ao09_width',
                    'trap': 'm04_ao04_sa_delay'}
         else:
             var = {'res': 'm03_ao13_reso', 'b0': 'm03_ao09_width'}
-
-        ##print(var)
 
         with open(fname, 'r') as f:
             f = np.array(f.readlines())
@@ -91,7 +89,6 @@ def var_find(fname, location, time=False):
                 var['b0']/1000), int(var['trap']/1000)
         else:
             res, b0 = round(var['res'], 1), int(var['b0']/1000)
-        ##print(var)
 
         if time:
             return res, b0
